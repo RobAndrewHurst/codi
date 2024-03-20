@@ -1,8 +1,8 @@
 {
-    "name": "codi",
+    "name": "codi-test-framework",
     "version": "0.0.1",
     "description": "A simple test framework for JavaScript",
-    "main": "src/index.js",
+    "main": "cli.js",
     "type": "module",
     "bin": {
         "codi": "cli.js"
