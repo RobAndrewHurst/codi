@@ -1,0 +1,20 @@
+{
+    "name": "codi",
+    "version": "0.0.1",
+    "description": "A simple test framework for JavaScript",
+    "main": "src/index.js",
+    "type": "module",
+    "bin": {
+        "codi": "cli.js"
+    },
+    "scripts": {
+        "test": "node src/index.js"
+    },
+    "keywords": [
+        "test",
+        "framework",
+        "javascript"
+    ],
+    "author": "Rob Hurst",
+    "license": "MIT"
+}
