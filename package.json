@@ -1,6 +1,6 @@
 {
     "name": "codi-test-framework",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
     "type": "module",
@@ -8,7 +8,7 @@
         "codi": "cli.js"
     },
     "scripts": {
-        "test": "node src/index.js"
+        "test": "node cli tests"
     },
     "keywords": [
         "test",

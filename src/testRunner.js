@@ -65,7 +65,7 @@ async function runTestFile(testFile) {
   // Function to run all test files in a directory
   export function runTests(testDirectory) {
     // Read all files in the test directory
-    const testFiles = fs.readdirSync(testDirectory).filter(file => file.endsWith('.mjs'));
+    const testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
   
     // Run each test file
     testFiles.forEach(async (file) => {
