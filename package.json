@@ -16,5 +16,8 @@
         "javascript"
     ],
     "author": "Rob Hurst",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "chalk": "^5.3.0"
+    }
 }
