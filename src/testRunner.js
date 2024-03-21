@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 
+let passedTests = 0;
+let failedTests = 0;
+
 export function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
   callback();
@@ -11,9 +14,11 @@ export function it(description, callback) {
   try {
     callback();
     console.log(chalk.green(`  ✅ ${description}`));
+    passedTests++;
   } catch (error) {
     console.error(chalk.red(`  ⛔ ${description}`));
     console.error(chalk.red(`    ${error.message}`));
+    failedTests++;
   }
 }
 
@@ -93,22 +98,37 @@ async function runTestFile(testFile) {
   } catch (error) {
     console.error(chalk.red(`\nError running test file ${chalk.underline(testFile)}:`));
     console.error(chalk.red(error.stack));
+    failedTests++;
   }
 }
 
 // Function to run all test files in a directory
-export function runTests(testDirectory) {
+export async function runTests(testDirectory) {
   // Read all files in the test directory
   const testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
 
   console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
   console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
 
-  // Run each test file
-  testFiles.forEach(async (file) => {
+  // Run each test file sequentially
+  for (const file of testFiles) {
     const testFile = path.join(testDirectory, file);
     await runTestFile(testFile);
-  });
+  }
+
+  // Print the test summary
+  console.log(chalk.bold.cyan('\nTest Summary:'));
+  console.log(chalk.green(`  Passed: ${passedTests}`));
+  console.log(chalk.red(`  Failed: ${failedTests}`));
+
+  // Exit the process with the appropriate status code
+  if (failedTests > 0) {
+    console.log(chalk.red('\nSome tests failed.'));
+    process.exit(1);
+  } else {
+    console.log(chalk.green('\nAll tests passed.'));
+    process.exit(0);
+  }
 }
 
 // CLI function
