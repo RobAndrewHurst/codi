@@ -3,6 +3,14 @@ import path from 'path';
 import chalk from 'chalk';
 import assertions from './assertions/_assertions.js';
 
+// Assertion functions
+export const assertEqual = assertions.assertEqual;
+export const assertNotEqual = assertions.assertNotEqual;
+export const assertTrue = assertions.assertTrue;
+export const assertFalse = assertions.assertFalse;
+export const assertThrows = assertions.assertThrows;
+export const assertDeepEqual = assertions.assertDeepEqual;
+
 let passedTests = 0;
 let failedTests = 0;
 
@@ -22,14 +30,6 @@ export function it(description, callback) {
     failedTests++;
   }
 }
-
-// Assertion functions
-export const assertEqual = assertions.assertEqual;
-export const assertNotEqual = assertions.assertNotEqual;
-export const assertTrue = assertions.assertTrue;
-export const assertFalse = assertions.assertFalse;
-export const assertThrows = assertions.assertThrows;
-export const assertDeepEqual = assertions.assertDeepEqual;
 
 // Function to run a single test file
 async function runTestFile(testFile) {
