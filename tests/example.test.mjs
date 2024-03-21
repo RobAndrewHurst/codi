@@ -1,4 +1,4 @@
-import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows } from '../src/testRunner.js';
+import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertDeepEqual } from '../src/testRunner.js';
 
 import { helloworld } from '../example/example.mjs';
 
@@ -31,4 +31,11 @@ describe('I am an Example Test Suite', () => {
       throw new Error('An error occurred');
     }, 'An error occurred', 'Expected an error to be thrown');
   });
+
+  it('should deeply compare objects', () => {
+    const obj1 = { a: 1, b: { c: 2 } };
+    const obj2 = { a: 1, b: { d: 2 } };
+    assertDeepEqual(obj1, obj2, 'Expected objects to be deeply equal');
+  });
+
 });
