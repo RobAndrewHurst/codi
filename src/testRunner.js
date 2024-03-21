@@ -93,8 +93,13 @@ function isDeepEqual(obj1, obj2) {
 // Function to run a single test file
 async function runTestFile(testFile) {
   try {
-    // Import the test file as an ES module using an absolute path
-    await import(path.resolve(testFile));
+    // Convert the file path to a valid file:// URL on Windows
+    const fileUrl = path.isAbsolute(testFile)
+      ? `file://${testFile}`
+      : `file://${path.resolve(testFile)}`;
+
+    // Import the test file as an ES module using the file URL
+    await import(fileUrl);
   } catch (error) {
     console.error(chalk.red(`\nError running test file ${chalk.underline(testFile)}:`));
     console.error(chalk.red(error.stack));
