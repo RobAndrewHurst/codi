@@ -50,6 +50,7 @@ describe('Math operations', () => {
 Codi provides several assertion functions to compare expected and actual values:
 
 - `assertEqual(actual, expected, message)`: Asserts that the actual value is equal to the expected value. ⚖️
+- `assertDeepEqual(actual, expected, message)`: Asserts that the actual object is equal to the expected object. ⚖️
 - `assertNotEqual(actual, expected, message)`: Asserts that the actual value is not equal to the expected value. 🙅‍♂️
 - `assertTrue(actual, message)`: Asserts that the actual value is true. ✅
 - `assertFalse(actual, message)`: Asserts that the actual value is false. ❌
