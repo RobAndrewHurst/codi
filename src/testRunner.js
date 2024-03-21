@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
+import assertions from './assertions/_assertions.js';
 
 let passedTests = 0;
 let failedTests = 0;
@@ -23,72 +24,12 @@ export function it(description, callback) {
 }
 
 // Assertion functions
-export function assertEqual(actual, expected, message) {
-  if (actual !== expected) {
-    throw new Error(message || `Expected ${chalk.bold.yellow(actual)} to equal ${chalk.bold.yellow(expected)}`);
-  }
-}
-
-export function assertNotEqual(actual, expected, message) {
-  if (actual === expected) {
-    throw new Error(message || `Expected ${chalk.bold.yellow(actual)} not to equal ${chalk.bold.yellow(expected)}`);
-  }
-}
-
-export function assertTrue(actual, message) {
-  if (actual !== true) {
-    throw new Error(message || `Expected ${chalk.bold.yellow(actual)} to be true`);
-  }
-}
-
-export function assertFalse(actual, message) {
-  if (actual !== false) {
-    throw new Error(message || `Expected ${chalk.bold.yellow(actual)} to be false`);
-  }
-}
-
-export function assertThrows(callback, errorMessage, message) {
-  try {
-    callback();
-    throw new Error(message || 'Expected an error to be thrown');
-  } catch (error) {
-    if (error.message !== errorMessage) {
-      throw new Error(message || `Expected error message to be ${chalk.bold.yellow(errorMessage)}, but got ${chalk.bold.yellow(error.message)}`);
-    }
-  }
-}
-
-export function assertDeepEqual(actual, expected, message) {
-  if (!isDeepEqual(actual, expected)) {
-    throw new Error(message || `Expected ${chalk.bold.yellow(JSON.stringify(actual))} to deeply equal ${chalk.bold.yellow(JSON.stringify(expected))}`);
-  }
-}
-
-// Helper function to compare objects deeply
-function isDeepEqual(obj1, obj2) {
-  if (obj1 === obj2) {
-    return true;
-  }
-
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
-    return false;
-  }
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-
-  for (const key of keys1) {
-    if (!keys2.includes(key) || !isDeepEqual(obj1[key], obj2[key])) {
-      return false;
-    }
-  }
-
-  return true;
-}
+export const assertEqual = assertions.assertEqual;
+export const assertNotEqual = assertions.assertNotEqual;
+export const assertTrue = assertions.assertTrue;
+export const assertFalse = assertions.assertFalse;
+export const assertThrows = assertions.assertThrows;
+export const assertDeepEqual = assertions.assertDeepEqual;
 
 // Function to run a single test file
 async function runTestFile(testFile) {
