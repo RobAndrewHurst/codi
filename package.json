@@ -1,5 +1,5 @@
 {
-    "name": "codi",
+    "name": "codi-test-framework",
     "version": "0.0.5",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
