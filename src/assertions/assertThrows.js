@@ -1,3 +1,5 @@
+import chalk from "chalk";
+
 export function assertThrows(callback, errorMessage, message) {
     try {
         callback();

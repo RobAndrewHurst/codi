@@ -1,3 +1,4 @@
+import chalk from "chalk";
 
 export function assertEqual(actual, expected, message) {
     if (!isDeepEqual(actual, expected)) {
