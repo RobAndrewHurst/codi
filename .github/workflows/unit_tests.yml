@@ -1,0 +1,24 @@
+name: Codi unit tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v3
+      with:
+          node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm run test
