@@ -2,6 +2,9 @@ import { runCLI } from "./testNodeRunner.js";
 import { describe, it } from "./suite.js";
 import assertions from './assertions/_assertions.js';
 
+global.PASSED_TESTS = 0;
+global.FAILED_TESTS = 0;
+
 // Assertion functions
 const assertEqual = assertions.assertEqual;
 const assertNotEqual = assertions.assertNotEqual;

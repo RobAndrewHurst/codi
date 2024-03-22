@@ -2,9 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 
-global.PASSED_TESTS = 0;
-global.FAILED_TESTS = 0;
-
 // Function to run a single test file
 async function runTestFile(testFile) {
   try {
