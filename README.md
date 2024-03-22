@@ -1,6 +1,7 @@
 # Codi Test Framework 🐶 
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![example workflow](https://github.com/RobAndrewHurst/codi/actions/workflows/unit_tests.yml/badge.svg)
 
 Codi is a lightweight JavaScript test framework that allows you to write and run tests for your JavaScript code. It provides a simple and intuitive API for defining test suites and test cases, making it easy to ensure the correctness of your code. ✨
 
