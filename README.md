@@ -1,6 +1,7 @@
 # Codi Test Framework 🐶 
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![example workflow](https://github.com/RobAndrewHurst/codi/actions/workflows/unit_tests.yml/badge.svg)
 
 Codi is a lightweight JavaScript test framework that allows you to write and run tests for your JavaScript code. It provides a simple and intuitive API for defining test suites and test cases, making it easy to ensure the correctness of your code. ✨
 
@@ -50,7 +51,6 @@ describe('Math operations', () => {
 Codi provides several assertion functions to compare expected and actual values:
 
 - `assertEqual(actual, expected, message)`: Asserts that the actual value is equal to the expected value. ⚖️
-- `assertDeepEqual(actual, expected, message)`: Asserts that the actual object is equal to the expected object. ⚖️
 - `assertNotEqual(actual, expected, message)`: Asserts that the actual value is not equal to the expected value. 🙅‍♂️
 - `assertTrue(actual, message)`: Asserts that the actual value is true. ✅
 - `assertFalse(actual, message)`: Asserts that the actual value is false. ❌
