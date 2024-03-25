@@ -14,9 +14,9 @@ export const assertDeepEqual = assertions.assertDeepEqual;
 let passedTests = 0;
 let failedTests = 0;
 
-export function describe(description, callback) {
+export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
-  callback();
+  await callback();
 }
 
 export async function it(description, callback) {
