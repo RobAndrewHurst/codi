@@ -19,9 +19,9 @@ export function describe(description, callback) {
   callback();
 }
 
-export function it(description, callback) {
+export async function it(description, callback) {
   try {
-    callback();
+    await callback();
     console.log(chalk.green(`  ✅ ${description}`));
     passedTests++;
   } catch (error) {
