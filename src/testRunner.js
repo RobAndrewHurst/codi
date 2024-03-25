@@ -1,4 +1,5 @@
 import { runCLI } from "./testNodeRunner.js";
+import { testBrowser } from "./browserTestRunner.js";
 import { describe, it } from "./suite.js";
 import assertions from './assertions/_assertions.js';
 
@@ -12,13 +13,17 @@ const assertTrue = assertions.assertTrue;
 const assertFalse = assertions.assertFalse;
 const assertThrows = assertions.assertThrows;
 
+const isBrowser = process.argv[3] === '--browser';
+
+const run = isBrowser ? testBrowser : runCLI;
+
 export {
-  runCLI,
+  run,
   describe,
   it,
   assertEqual,
   assertNotEqual,
   assertTrue,
   assertFalse,
-  assertThrows 
+  assertThrows
 };
