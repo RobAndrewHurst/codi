@@ -8,7 +8,7 @@
         "codi": "cli.js"
     },
     "scripts": {
-        "test": "node cli tests"
+        "test": "bun cli.js tests --bun"
     },
     "keywords": [
         "test",

@@ -15,7 +15,7 @@ describe('I am an Example Test Suite', () => {
   });
 
   it('should pass inequality assertion', () => {
-    assertNotEqual(1, 2, 'Expected 1 not to equal 2');
+    assertNotEqual(1, 2, 'Expected 1 not to equal 2');  
   });
 
   it('should pass true assertion', () => {
