@@ -23,6 +23,8 @@ To use Codi in your project, you need to have Node.js installed. You can install
 npm install --save-dev codi-test-framework
 ```
 
+> For user using codi v0.0.14^ ensure that you have bun v1.1.0 installed.
+
 ## Usage 🛠️
 
 ### Writing Tests ✍️
