@@ -13,6 +13,7 @@ Codi is a lightweight JavaScript test framework that allows you to write and run
 - 🌈 Colorful output for better readability
 - 🖥️ Supports running tests from the command line
 - 🌐 Compatible with ECMAScript modules (ESM)
+- ⚡ Super fast thanks to [bun.sh](https://bun.sh)
 
 ## Installation 📦
 
@@ -21,6 +22,8 @@ To use Codi in your project, you need to have Node.js installed. You can install
 ```
 npm install --save-dev codi-test-framework
 ```
+
+> For user using codi v0.0.14^ ensure that you have bun v1.1.0 installed.
 
 ## Usage 🛠️
 
