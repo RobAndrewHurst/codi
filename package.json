@@ -1,11 +1,11 @@
 {
     "name": "codi-test-framework",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
     "type": "module",
     "bin": {
-        "codi": "cli.js"
+        "codi": "bun run cli.js"
     },
     "scripts": {
         "test": "bun cli.js tests --bun"
