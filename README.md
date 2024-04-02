@@ -13,6 +13,7 @@ Codi is a lightweight JavaScript test framework that allows you to write and run
 - 🌈 Colorful output for better readability
 - 🖥️ Supports running tests from the command line
 - 🌐 Compatible with ECMAScript modules (ESM)
+- ⚡ Super fast thanks to [bun.sh](https://bun.sh)
 
 ## Installation 📦
 
