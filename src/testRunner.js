@@ -94,7 +94,7 @@ export async function runWebTests(testFiles) {
 
   // Run each test file sequentially
   for (const file of testFiles) {
-    await runTestFile(file);
+    await runWebTestFile(file);
   }
 
   // Return a promise that resolves with the test results
