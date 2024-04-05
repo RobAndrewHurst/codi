@@ -80,11 +80,11 @@ export async function runTests(testDirectory) {
 // Function to run a single test file
 async function runWebTestFile(testFile) {
   try {
-      await import(testFile);
+    await import(testFile);
   } catch (error) {
-      console.error(`Error running test file ${testFile}:`);
-      console.error(error.stack);
-      failedTests++;
+    console.error(`Error running test file ${testFile}:`);
+    console.error(error.stack);
+    failedTests++;
   }
 }
 
@@ -94,14 +94,13 @@ export async function runWebTests(testFiles) {
 
   // Run each test file sequentially
   for (const file of testFiles) {
-      await runWebTestFile(file);
+    await runWebTestFile(file);
   }
 
-  // Return the test results
-  return {
-      passed: passedTests,
-      failed: failedTests
-  };
+  console.log(chalk.bold.cyan('\nTest Summary:'));
+  console.log(chalk.green(`  Passed: ${passedTests}`));
+  console.log(chalk.red(`  Failed: ${failedTests}`));
+
 }
 
 // CLI function
