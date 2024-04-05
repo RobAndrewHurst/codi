@@ -94,14 +94,16 @@ export async function runWebTests(testFiles) {
 
   // Run each test file sequentially
   for (const file of testFiles) {
-      await runWebTestFile(file);
+    await runTestFile(file);
   }
 
-  // Return the test results
-  return {
+  // Return a promise that resolves with the test results
+  return new Promise((resolve) => {
+    resolve({
       passed: passedTests,
       failed: failedTests
-  };
+    });
+  });
 }
 
 // CLI function
