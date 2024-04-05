@@ -77,6 +77,38 @@ export async function runTests(testDirectory) {
   }
 }
 
+// Function to run a single test file
+async function runWebTestFile(testFile) {
+  try {
+      await import(testFile);
+  } catch (error) {
+      console.error(`Error running test file ${testFile}:`);
+      console.error(error.stack);
+      failedTests++;
+  }
+}
+
+// Function to run all test files
+export async function runWebTests(testFiles) {
+  console.log(`Running ${testFiles.length} test file(s)`);
+
+  // Run each test file sequentially
+  for (const file of testFiles) {
+      await runWebTestFile(file);
+  }
+
+  // Print the test summary
+  console.log('Test Summary:');
+  console.log(` Passed: ${passedTests}`);
+  console.log(` Failed: ${failedTests}`);
+
+  // Return the test results
+  return {
+      passed: passedTests,
+      failed: failedTests
+  };
+}
+
 // CLI function
 export function runCLI() {
   const testDirectory = process.argv[2];
