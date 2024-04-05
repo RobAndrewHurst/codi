@@ -15,9 +15,8 @@ let passedTests = 0;
 let failedTests = 0;
 
 export async function describe(description, callback) {
-  console.group(chalk.bold.cyan(`\n${description}`));
+  console.log(chalk.bold.cyan(`\n${description}`));
   await callback();
-  console.groupEnd();
 }
 
 export async function it(description, callback) {
@@ -93,22 +92,16 @@ async function runWebTestFile(testFile) {
 export async function runWebTests(testFiles) {
   console.log(`Running ${testFiles.length} test file(s)`);
 
-  // Create an array to store the promises for each test file
-  const testPromises = testFiles.map(file => runWebTestFile(file));
+  // Run each test file sequentially
+  for (const file of testFiles) {
+      await runWebTestFile(file);
+  }
 
-  try {
-    // Wait for all the test promises to resolve
-    await Promise.all(testPromises);
-
-    // Return a promise that resolves with the test results
-    return Promise.resolve({
+  // Return the test results
+  return {
       passed: passedTests,
       failed: failedTests
-    });
-  } catch (error) {
-    console.error('Error running tests:', error);
-    throw error;
-  }
+  };
 }
 
 // CLI function
