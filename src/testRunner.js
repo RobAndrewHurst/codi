@@ -15,8 +15,9 @@ let passedTests = 0;
 let failedTests = 0;
 
 export async function describe(description, callback) {
-  console.log(chalk.bold.cyan(`\n${description}`));
+  console.group(chalk.bold.cyan(`\n${description}`));
   await callback();
+  console.groupEnd();
 }
 
 export async function it(description, callback) {
