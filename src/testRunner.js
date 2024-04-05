@@ -97,11 +97,6 @@ export async function runWebTests(testFiles) {
       await runWebTestFile(file);
   }
 
-  // Print the test summary
-  console.log('Test Summary:');
-  console.log(` Passed: ${passedTests}`);
-  console.log(` Failed: ${failedTests}`);
-
   // Return the test results
   return {
       passed: passedTests,
