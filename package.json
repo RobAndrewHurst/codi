@@ -1,6 +1,6 @@
 {
     "name": "codi-test-framework",
-    "version": "0.0.24",
+    "version": "0.0.25",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
     "type": "module",
@@ -19,6 +19,7 @@
     "author": "Rob Hurst",
     "license": "MIT",
     "dependencies": {
-        "chalk": "^5.3.0"
+        "chalk": "^5.3.0",
+        "figlet": "^1.7.0"
     }
 }

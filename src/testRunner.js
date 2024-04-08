@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
+import figlet from 'figlet';
 import assertions from './assertions/_assertions.js';
 
 // Assertion functions
@@ -13,7 +14,7 @@ export const assertThrows = assertions.assertThrows;
 let passedTests = 0;
 let failedTests = 0;
 let testResults = [];
-let version = 'v0.0.24';
+let version = 'v0.0.25';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
@@ -141,7 +142,7 @@ export function runCLI() {
   const returnVersion = process.argv.includes('--version');
 
   if (returnVersion) {
-    console.log(chalk.blue(version));
+    console.log(chalk.blue(`🐶 Woof! Woof!:  ${version}`));
     process.exit(0);
   }
 
