@@ -1,6 +1,6 @@
 {
     "name": "codi-test-framework",
-    "version": "0.0.23",
+    "version": "0.0.24",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
     "type": "module",
@@ -8,7 +8,8 @@
         "codi": "cli.js"
     },
     "scripts": {
-        "test": "bun cli.js tests --bun"
+        "test": "bun --bun cli.js tests --returnResults",
+        "version": "bun --bun cli.js --version"
     },
     "keywords": [
         "test",

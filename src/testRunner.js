@@ -9,26 +9,41 @@ export const assertNotEqual = assertions.assertNotEqual;
 export const assertTrue = assertions.assertTrue;
 export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
-export const assertDeepEqual = assertions.assertDeepEqual;
 
 let passedTests = 0;
 let failedTests = 0;
+let testResults = [];
+let version = 'v0.0.24';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
+  const describe = {
+    [description]: []
+  }
+  testResults.push(describe);
   await callback();
 }
 
 export async function it(description, callback) {
+  const itObj = {
+    [description]: []
+  }
+
+  const currentDescribeObj = testResults[testResults.length - 1];
+
   try {
     await callback();
-    console.log(chalk.green(`  ✅ ${description}`));
+    console.log(chalk.green(` ✅ ${description}`));
+    itObj[description] = 'passed';
     passedTests++;
   } catch (error) {
-    console.error(chalk.red(`  ⛔ ${description}`));
-    console.error(chalk.red(`    ${error.message}`));
+    console.error(chalk.red(` ⛔ ${description}`));
+    console.error(chalk.red(` ${error.message}`));
+    itObj[description] = 'failed';
     failedTests++;
   }
+
+  Object.values(currentDescribeObj)[0].push(itObj);
 }
 
 // Function to run a single test file
@@ -49,7 +64,7 @@ async function runTestFile(testFile) {
 }
 
 // Function to run all test files in a directory
-export async function runTests(testDirectory) {
+export async function runTests(testDirectory, returnResults = false) {
   // Read all files in the test directory
   const testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
 
@@ -66,6 +81,17 @@ export async function runTests(testDirectory) {
   console.log(chalk.bold.cyan('\nTest Summary:'));
   console.log(chalk.green(`  Passed: ${passedTests}`));
   console.log(chalk.red(`  Failed: ${failedTests}`));
+
+  if (returnResults) {
+
+    let results = {
+      passedTests,
+      failedTests,
+      testResults
+    };
+
+    return results;
+  }
 
   // Exit the process with the appropriate status code
   if (failedTests > 0) {
@@ -101,11 +127,23 @@ export async function runWebTests(testFiles) {
   console.log(chalk.green(`  Passed: ${passedTests}`));
   console.log(chalk.red(`  Failed: ${failedTests}`));
 
+  return {
+    passedTests,
+    failedTests,
+    testResults
+  }
 }
 
 // CLI function
 export function runCLI() {
   const testDirectory = process.argv[2];
+  const returnResults = process.argv.includes('--returnResults');
+  const returnVersion = process.argv.includes('--version');
+
+  if (returnVersion) {
+    console.log(chalk.blue(version));
+    process.exit(0);
+  }
 
   if (!testDirectory) {
     console.error(chalk.red('Please provide a test directory as an argument.'));
@@ -116,5 +154,6 @@ export function runCLI() {
   console.log(chalk.bold.cyan('Running tests...'));
   console.log(chalk.bold.cyan('='.repeat(40)));
 
-  runTests(testDirectory);
+  runTests(testDirectory, returnResults);
+
 }
