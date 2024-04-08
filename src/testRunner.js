@@ -14,7 +14,7 @@ export const assertThrows = assertions.assertThrows;
 let passedTests = 0;
 let failedTests = 0;
 let testResults = [];
-let version = 'v0.0.25';
+let version = 'v0.0.26';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
@@ -142,7 +142,7 @@ export function runCLI() {
   const returnVersion = process.argv.includes('--version');
 
   if (returnVersion) {
-    console.log(chalk.blue(`🐶 Woof! Woof!:  ${version}`));
+    console.log(chalk.blue(`🐶 Woof! Woof!: ${chalk.green(version)}`));
     process.exit(0);
   }
 
