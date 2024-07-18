@@ -13,7 +13,7 @@ export const assertThrows = assertions.assertThrows;
 let passedTests = 0;
 let failedTests = 0;
 let testResults = [];
-let version = 'v0.0.27';
+let version = 'v0.0.28';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
