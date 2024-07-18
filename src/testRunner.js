@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import figlet from 'figlet';
 import assertions from './assertions/_assertions.js';
-
+import { excludePattern } from './util/regex.js';
 // Assertion functions
 export const assertEqual = assertions.assertEqual;
 export const assertNotEqual = assertions.assertNotEqual;
@@ -65,9 +64,13 @@ async function runTestFile(testFile) {
 }
 
 // Function to run all test files in a directory
-export async function runTests(testDirectory, returnResults = false) {
+export async function runTests(testDirectory, returnResults = false, codiConfig) {
   // Read all files in the test directory
-  const testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
+  const matcher = excludePattern(codiConfig.excludeDirectories);
+  console.log(matcher);
+  let testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
+  console.log(testFiles);
+  console.log(testFiles.filter(matcher));
 
   console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
   console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
@@ -136,10 +139,25 @@ export async function runWebTests(testFiles) {
 }
 
 // CLI function
-export function runCLI() {
+export async function runCLI() {
   const testDirectory = process.argv[2];
   const returnResults = process.argv.includes('--returnResults');
   const returnVersion = process.argv.includes('--version');
+
+  let codiConfig = {};
+
+  try {
+    const currentDir = process.cwd();
+    const codiFilePath = path.join(currentDir, 'codi.json');
+
+    // await fs.access(codiFilePath);
+
+    const codiFileContent = fs.readFileSync(codiFilePath, 'utf-8');
+    codiConfig = JSON.parse(codiFileContent);
+  }
+  catch (err) {
+    console.log(err);
+  }
 
   if (returnVersion) {
     console.log(chalk.blue(`🐶 Woof! Woof!: ${chalk.green(version)}`));
@@ -155,6 +173,7 @@ export function runCLI() {
   console.log(chalk.bold.cyan('Running tests...'));
   console.log(chalk.bold.cyan('='.repeat(40)));
 
-  runTests(testDirectory, returnResults);
+  console.log(codiConfig);
+  runTests(testDirectory, returnResults, codiConfig);
 
 }

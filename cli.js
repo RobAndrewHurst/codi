@@ -2,4 +2,4 @@
 
 import { runCLI } from './src/testRunner.js';
 
-runCLI();
+await runCLI();
