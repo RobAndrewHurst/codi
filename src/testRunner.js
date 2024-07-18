@@ -68,7 +68,7 @@ export async function runTests(testDirectory, returnResults = false, codiConfig)
   // Read all files in the test directory
   const matcher = excludePattern(codiConfig.excludeDirectories);
   let testFiles = fs.readdirSync(testDirectory, { recursive: true }).filter(file => file.endsWith('.mjs'));
-  testFiles = testFiles.filter(matcher);
+  testFiles = testFiles.filter(file => !matcher(file));
 
   console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
   console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
