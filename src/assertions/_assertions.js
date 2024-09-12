@@ -10,5 +10,6 @@ export default {
     assertNotEqual,
     assertTrue,
     assertFalse,
-    assertThrows
+    assertThrows,
+    assertNoDuplicates
 }

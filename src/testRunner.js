@@ -9,11 +9,12 @@ export const assertNotEqual = assertions.assertNotEqual;
 export const assertTrue = assertions.assertTrue;
 export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
+export const assertNoDuplicates = assertions.assertNoDuplicates;
 
 let passedTests = 0;
 let failedTests = 0;
 let testResults = [];
-let version = 'v0.0.29';
+let version = 'v0.0.31';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
