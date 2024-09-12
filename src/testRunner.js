@@ -14,7 +14,7 @@ export const assertNoDuplicates = assertions.assertNoDuplicates;
 let passedTests = 0;
 let failedTests = 0;
 let testResults = [];
-let version = 'v0.0.31';
+let version = 'v0.0.32';
 
 export async function describe(description, callback) {
   console.log(chalk.bold.cyan(`\n${description}`));
