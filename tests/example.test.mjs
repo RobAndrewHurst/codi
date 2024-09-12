@@ -1,4 +1,4 @@
-import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows } from '../src/testRunner.js';
+import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates } from '../src/testRunner.js';
 
 import { helloworld } from '../example/example.mjs';
 
@@ -15,7 +15,7 @@ describe('I am an Example Test Suite', () => {
   });
 
   it('should pass inequality assertion', () => {
-    assertNotEqual(1, 2, 'Expected 1 not to equal 2');  
+    assertNotEqual(1, 2, 'Expected 1 not to equal 2');
   });
 
   it('should pass true assertion', () => {
@@ -36,6 +36,11 @@ describe('I am an Example Test Suite', () => {
     const obj1 = { a: 1, b: { c: 2 } };
     const obj2 = { a: 1, b: { c: 2 } };
     assertEqual(obj1, obj2, 'Expected objects to be deeply equal');
+  });
+
+  it('should check for duplicates', () => {
+    const array = ['field1', 'field2']
+    assertNoDuplicates(array, 'There should be no duplicates');
   });
 
 });
