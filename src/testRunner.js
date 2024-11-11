@@ -137,6 +137,26 @@ export async function runWebTests(testFiles) {
   }
 }
 
+
+export async function runTestFunction(testFn) {
+
+  try {
+    await testFn();
+  } catch (error) {
+    console.error(`Error in test ${testFn.name}:`, error);
+  }
+
+  console.log(chalk.bold.cyan('\nTest Summary:'));
+  console.log(chalk.green(`  Passed: ${passedTests}`));
+  console.log(chalk.red(`  Failed: ${failedTests}`));
+
+  return {
+    passedTests,
+    failedTests,
+    testResults
+  }
+}
+
 // CLI function
 export async function runCLI() {
   const testDirectory = process.argv[2];

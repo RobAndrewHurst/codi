@@ -1,11 +1,11 @@
-import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates } from '../src/testRunner.js';
+import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates, runTestFunction } from '../src/testRunner.js';
 
 import { helloworld } from '../example/example.mjs';
 
 import pkg from '../example/common.cjs';
 const { helloCommon } = pkg;
 
-describe('I am an Example Test Suite', () => {
+await describe('I am an Example Test Suite', () => {
 
   helloworld();
   helloCommon();
@@ -42,5 +42,17 @@ describe('I am an Example Test Suite', () => {
     const array = ['field1', 'field2']
     assertNoDuplicates(array, 'There should be no duplicates');
   });
+
+});
+
+await describe('Running testFunction', async () => {
+
+  function testFunction() {
+    it('First', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    })
+  }
+
+  await runTestFunction(testFunction);
 
 });
