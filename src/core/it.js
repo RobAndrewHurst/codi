@@ -25,12 +25,15 @@ export async function it(description, callback) {
         test.status = 'passed';
         test.duration = performance.now() - test.startTime;
         state.passedTests++;
-        console.log(chalk.green(` ✅ ${description} (${test.duration.toFixed(2)}ms)`));
+        if (!state.options?.quiet) {
+            console.log(chalk.green(` ✅ ${description} (${test.duration.toFixed(2)}ms)`));
+        }
     } catch (error) {
         test.status = 'failed';
         test.error = error;
         test.duration = performance.now() - test.startTime;
         state.failedTests++;
+        // Always show errors, even in quiet mode
         console.error(chalk.red(` ⛔ ${description} (${test.duration.toFixed(2)}ms)`));
         console.error(chalk.red(`   ${error.message}`));
     }

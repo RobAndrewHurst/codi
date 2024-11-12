@@ -34,9 +34,10 @@ async function runTestFile(testFile) {
  * @param {object} [codiConfig={}] - Configuration object
  * @returns {Promise<object|void>} Test results if returnResults is true
  */
-export async function runTests(testDirectory, returnResults = false, codiConfig = {}) {
+export async function runTests(testDirectory, returnResults = false, codiConfig = {}, options = {}) {
     state.resetCounters();
     state.startTimer();
+    state.setOptions(options);
 
     let testFiles = fs.readdirSync(testDirectory, { recursive: true })
         .filter(file => file.endsWith('.mjs'));
@@ -46,26 +47,29 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
         testFiles = testFiles.filter(file => !matcher(file));
     }
 
-    console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
-    console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
+    if (!options.quiet) {
+        console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
+        console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
+    }
 
     for (const file of testFiles) {
         await runTestFile(path.join(testDirectory, file));
     }
 
-    const summary = {
-        passedTests: state.passedTests,
-        failedTests: state.failedTests,
-        testResults: state.testResults,
-        executionTime: state.getExecutionTime()
-    };
-
+    // Always show the final summary
     console.log(chalk.bold.cyan('\nTest Summary:'));
-    console.log(chalk.green(`  Passed: ${summary.passedTests}`));
-    console.log(chalk.red(`  Failed: ${summary.failedTests}`));
-    console.log(chalk.blue(`  Time: ${summary.executionTime}s`));
+    console.log(chalk.green(`  Passed: ${state.passedTests}`));
+    console.log(chalk.red(`  Failed: ${state.failedTests}`));
+    console.log(chalk.blue(`  Time: ${state.getExecutionTime()}s`));
 
-    if (returnResults) return summary;
+    if (returnResults) {
+        return {
+            passedTests: state.passedTests,
+            failedTests: state.failedTests,
+            testResults: state.testResults,
+            executionTime: state.getExecutionTime()
+        };
+    }
 
     if (state.failedTests > 0) {
         console.log(chalk.red('\nSome tests failed.'));

@@ -40,6 +40,7 @@ export async function runCLI() {
   const returnResults = process.argv.includes('--returnResults');
   const returnVersion = process.argv.includes('--version');
   const configPathIndex = process.argv.indexOf('--config');
+  const quiet = process.argv.includes('--quiet');
 
   let codiConfig = {};
 
@@ -64,12 +65,16 @@ export async function runCLI() {
     if (err.code !== 'ENOENT') {
       throw err;
     }
-    console.log(chalk.yellow(`No config file found at ${configPath}, proceeding with default settings`));
+    if (!quiet) {
+      console.log(chalk.yellow(`No config file found at ${configPath}, proceeding with default settings`));
+    }
   }
 
-  console.log(chalk.bold.cyan('='.repeat(40)));
-  console.log(chalk.bold.cyan('Running tests...'));
-  console.log(chalk.bold.cyan('='.repeat(40)));
+  if (!quiet) {
+    console.log(chalk.bold.cyan('='.repeat(40)));
+    console.log(chalk.bold.cyan('Running tests...'));
+    console.log(chalk.bold.cyan('='.repeat(40)));
+  }
 
-  await nodeRunTests(testDirectory, returnResults, codiConfig);
+  await nodeRunTests(testDirectory, returnResults, codiConfig, { quiet });
 }

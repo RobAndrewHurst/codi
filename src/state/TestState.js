@@ -24,6 +24,13 @@ class TestState {
 
         /** @type {number|null} Test start time */
         this.startTime = null;
+
+        /** @type {object} options */
+        this.options = {};
+    }
+
+    setOptions(options) {
+        this.options = options;
     }
 
     /**

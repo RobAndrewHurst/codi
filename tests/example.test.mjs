@@ -1,12 +1,7 @@
 import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates, runTestFunction } from '../src/testRunner.js';
-import { helloworld } from '../example/example.mjs';
-import pkg from '../example/common.cjs';
-const { helloCommon } = pkg;
 
 // First test suite
 await describe('I am an Example Test Suite', () => {
-  helloworld();
-  helloCommon();
 
   it('should pass equality assertion', () => {
     assertEqual(1, 1, 'Expected 1 to equal 1');

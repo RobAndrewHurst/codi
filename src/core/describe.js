@@ -17,7 +17,9 @@ export async function describe(description, callback) {
     };
 
     state.pushSuite(suite);
-    console.log(chalk.bold.cyan(`\n${description}`));
+    if (!state.options?.quiet) {
+        console.log(chalk.bold.cyan(`\n${description}`));
+    }
 
     try {
         await Promise.resolve(callback());
