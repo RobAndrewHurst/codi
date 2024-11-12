@@ -56,11 +56,7 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
         await runTestFile(path.join(testDirectory, file));
     }
 
-    // Always show the final summary
-    console.log(chalk.bold.cyan('\nTest Summary:'));
-    console.log(chalk.green(`  Passed: ${state.passedTests}`));
-    console.log(chalk.red(`  Failed: ${state.failedTests}`));
-    console.log(chalk.blue(`  Time: ${state.getExecutionTime()}s`));
+    state.printSummary();
 
     if (returnResults) {
         return {
@@ -87,7 +83,7 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
  * @param {Function} testFn - Test function to run
  * @returns {Promise<object>} Test results
  */
-export async function runTestFunction(testFn, options = {}) {
+export async function runTestFunction(testFn, options) {
     const suite = {
         description: `Function: ${testFn.name}`,
         tests: [],
@@ -95,7 +91,10 @@ export async function runTestFunction(testFn, options = {}) {
     };
 
     state.pushSuite(suite);
-    state.setOptions(options);
+
+    if (options) {
+        state.setOptions(options);
+    }
 
     try {
         await Promise.resolve(testFn());
@@ -107,6 +106,8 @@ export async function runTestFunction(testFn, options = {}) {
         state.testResults.push(suite);
         state.popSuite();
     }
+
+    state.printSummary();
 
     return {
         passedTests: state.passedTests,

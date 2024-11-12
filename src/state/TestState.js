@@ -1,5 +1,4 @@
-// src/state/TestState.js
-
+import chalk from 'chalk';
 /**
  * Class representing the state of test execution
  * @class TestState
@@ -86,6 +85,37 @@ class TestState {
      */
     popSuite() {
         return this.suiteStack.pop();
+    }
+
+    printSummary() {
+        if (state.options.quiet) {
+            state.printFailures();
+        }
+        // Always show the final summary
+        console.log(chalk.bold.cyan('\nTest Summary:'));
+        console.log(chalk.green(`  Passed: ${state.passedTests}`));
+        console.log(chalk.red(`  Failed: ${state.failedTests}`));
+        console.log(chalk.blue(`  Time: ${state.getExecutionTime()}s`));
+    }
+
+    printFailures() {
+
+        if (this.testResults.length > 0) {
+            this.testResults.forEach(suite => {
+
+                const failures = suite.tests.filter(test => test.status === 'failed');
+
+                if (failures.length > 0) {
+                    console.log('\nFailed Tests:');
+                    failures.forEach(failure => {
+                        console.log('\n' + chalk.red('✖ ' + chalk.bold(suite.description)));
+                        console.log(chalk.red(`  └─ ${failure.description}`));
+                        console.log(chalk.red(`     ${failure.error.message}`));
+                    });
+                }
+
+            });
+        }
     }
 }
 

@@ -48,14 +48,14 @@ export async function runWebTests(testFiles, options = {}) {
     const {
         parallel = false,
         timeout = 5000,
-        silent = false,
+        quiet = false,
         batchSize = 5
     } = options;
 
     state.resetCounters();
     state.startTimer();
 
-    if (!silent) {
+    if (!quiet) {
         console.log(chalk.bold.magenta(`\nRunning ${testFiles.length} web test file(s)`));
     }
 
@@ -69,24 +69,24 @@ export async function runWebTests(testFiles, options = {}) {
                 }
 
                 for (const [index, batch] of batches.entries()) {
-                    if (!silent) {
+                    if (!quiet) {
                         console.log(chalk.blue(`\nBatch ${index + 1}/${batches.length}`));
                     }
 
                     await Promise.all(
-                        batch.map(file => runWebTestFile(file, { timeout, silent }))
+                        batch.map(file => runWebTestFile(file, { timeout, silent: quiet }))
                     );
                 }
             } else {
                 // Run all tests in parallel
                 await Promise.all(
-                    testFiles.map(file => runWebTestFile(file, { timeout, silent }))
+                    testFiles.map(file => runWebTestFile(file, { timeout, silent: quiet }))
                 );
             }
         } else {
             // Run tests sequentially
             for (const file of testFiles) {
-                await runWebTestFile(file, { timeout, silent });
+                await runWebTestFile(file, { timeout, silent: quiet });
             }
         }
     } catch (error) {
@@ -102,13 +102,7 @@ export async function runWebTests(testFiles, options = {}) {
         testResults: state.testResults
     };
 
-    if (!silent) {
-        console.log(chalk.bold.cyan('\nTest Summary:'));
-        console.log(chalk.blue(`  Total: ${summary.totalTests}`));
-        console.log(chalk.green(`  Passed: ${summary.passedTests}`));
-        console.log(chalk.red(`  Failed: ${summary.failedTests}`));
-        console.log(chalk.blue(`  Time: ${summary.executionTime}s`));
-    }
+    state.printSummary();
 
     return summary;
 }
