@@ -87,7 +87,7 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
  * @param {Function} testFn - Test function to run
  * @returns {Promise<object>} Test results
  */
-export async function runTestFunction(testFn) {
+export async function runTestFunction(testFn, options = {}) {
     const suite = {
         description: `Function: ${testFn.name}`,
         tests: [],
@@ -95,6 +95,7 @@ export async function runTestFunction(testFn) {
     };
 
     state.pushSuite(suite);
+    state.setOptions(options);
 
     try {
         await Promise.resolve(testFn());
