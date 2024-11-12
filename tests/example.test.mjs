@@ -41,8 +41,8 @@ await describe('I am an Example Test Suite', () => {
 await describe('Running testFunction', async () => {
   function testFunction() {
     it('First', () => {
-      assertEqual(1, 1, 'Expected 1 to equal 1');
+      assertEqual(1, 2, 'Expected 1 to equal 1');
     });
   }
-  await runTestFunction(testFunction);
+  await runTestFunction(testFunction, { quiet: true });
 });
