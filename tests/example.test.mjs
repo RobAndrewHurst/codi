@@ -39,32 +39,50 @@ await describe('I am an Example Test Suite', () => {
 });
 
 
-await describe('I am the first describe', async () => {
-  await runTestFunction(testFunction, { showSummary: false }, 'I am the first function');
-  await runTestFunction(testFunction, { showSummary: false }, 'I am the second function');
-
-  await describe('I am the second describe', async () => {
-
-    it('should pass equality assertion', () => {
-      assertEqual(1, 2, 'Expected 1 to equal 1');
-    });
-
-    it('should pass equality assertion', () => {
-      assertEqual(1, 2, 'Expected 1 to equal 1');
-    });
-
-    await runTestFunction(testFunction, { showSummary: false }, 'I am the third function');
-
-    await describe('I am the third describe', async () => {
-
-      await runTestFunction(testFunction, { showSummary: false }, 'I am the fouth function');
-    })
-  })
-});
+await runTestFunction(testFunction);
 
 
 function testFunction() {
-  it('First', () => {
-    assertEqual(1, 1, 'Expected 1 to equal 1');
+  describe('First Layer', () => {
+    it('First', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('First', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('First', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+
+    secondFunction();
+  });
+}
+
+function secondFunction() {
+  describe('Second Layer', () => {
+    it('Second', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('Second', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('Second', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    thirdFunction();
+  });
+}
+
+function thirdFunction() {
+  describe('Third Layer', () => {
+    it('Third', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('Third', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
+    it('Third', () => {
+      assertEqual(1, 1, 'Expected 1 to equal 1');
+    });
   });
 }

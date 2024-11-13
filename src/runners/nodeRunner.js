@@ -83,32 +83,13 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
  * @param {Function} testFn - Test function to run
  * @returns {Promise<object>} Test results
  */
-export async function runTestFunction(testFn, options, description) {
-    const suite = {
-        description: description ? description : `Function: ${testFn.name}`,
-        tests: [],
-        startTime: performance.now()
-    };
-
-    state.pushSuite(suite);
-
-    if (options) {
-        state.setOptions(options);
-    }
+export async function runTestFunction(testFn) {
 
     try {
-        await Promise.resolve(testFn(suite.description));
+        await Promise.resolve(testFn());
     } catch (error) {
         console.error(`Error in test ${testFn.name}:`, error);
         state.failedTests++;
-    } finally {
-        suite.duration = performance.now() - suite.startTime;
-        state.testResults.push(suite);
-        state.popSuite();
-    }
-
-    if (options.showSummary) {
-        state.printSummary();
     }
 
     return {
