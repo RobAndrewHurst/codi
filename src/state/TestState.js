@@ -51,14 +51,6 @@ class TestState extends EventEmitter {
     }
 
     /**
-     * Get current suite path based on stack
-     * @returns {string} Full path of current suite stack
-     */
-    _getFullSuitePath() {
-        return this.suiteStack.map(suite => suite.description).join(' > ');
-    }
-
-    /**
      * Add a new suite to the stack and register it
      * @method
      * @param {object} suite - Test suite to add
