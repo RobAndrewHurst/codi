@@ -68,10 +68,10 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
     }
 
     if (state.failedTests > 0) {
-        console.log(chalk.red('\nSome tests failed.'));
+        console.log(chalk.red(`\n${state.failedTests} tests failed.`));
         process.exit(1);
     } else {
-        console.log(chalk.green('\nAll tests passed.'));
+        console.log(chalk.green(`\n${state.passedTests} tests passed.`));
         process.exit(0);
     }
 }
