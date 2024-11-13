@@ -52,7 +52,7 @@ export async function runWebTests(testFiles, options) {
     state.resetCounters();
     state.startTimer();
 
-    if (!quiet) {
+    if (!options.quiet) {
         console.log(chalk.bold.magenta(`\nRunning ${testFiles.length} web test file(s)`));
     }
 
