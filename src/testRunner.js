@@ -17,8 +17,7 @@ export {
 
 export {
   runWebTests,
-  runWebTestFile,
-  runWebTestFunction
+  runWebTestFile
 } from './runners/webRunner.js';
 
 // Assertion exports
@@ -29,7 +28,7 @@ export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
 export const assertNoDuplicates = assertions.assertNoDuplicates;
 
-export const version = 'v0.0.37';
+export const version = 'v0.0.38';
 
 /**
  * CLI entry point for running tests

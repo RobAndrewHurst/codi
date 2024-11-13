@@ -29,7 +29,10 @@ class TestState {
     }
 
     setOptions(options) {
-        this.options = options;
+        this.options = {
+            ...this.options,
+            ...options
+        };
     }
 
     /**
@@ -88,8 +91,35 @@ class TestState {
     }
 
     printSummary() {
-        if (state.options.quiet) {
-            state.printFailures();
+
+        if (this.testResults.length > 0) {
+            this.testResults.forEach(suite => {
+
+                let results = suite.tests;
+
+                if (state.options.quiet) {
+                    results = results.filter(result => result.status === 'failed');
+                }
+
+                if (results.length > 0) {
+                    console.log('\n' + chalk.yellow('' + chalk.bold(suite.description)));
+                }
+
+                if (results.length > 0) {
+                    results.forEach(result => {
+
+                        if (result.status === 'failed') {
+                            console.log(chalk.red(`  └─ ⛔ ${result.description} (${result.duration.toFixed(2)}ms)`));
+                            console.log(chalk.red(`     ${result.error.message}`));
+                        } else {
+                            console.log(chalk.green(`  └─ ✅ ${result.description} (${result.duration.toFixed(2)}ms)`));
+                        }
+
+
+                    });
+                }
+
+            });
         }
         // Always show the final summary
         console.log(chalk.bold.cyan('\nTest Summary:'));
@@ -98,25 +128,6 @@ class TestState {
         console.log(chalk.blue(`  Time: ${state.getExecutionTime()}s`));
     }
 
-    printFailures() {
-
-        if (this.testResults.length > 0) {
-            this.testResults.forEach(suite => {
-
-                const failures = suite.tests.filter(test => test.status === 'failed');
-
-                if (failures.length > 0) {
-                    console.log('\nFailed Tests:');
-                    failures.forEach(failure => {
-                        console.log('\n' + chalk.red('✖ ' + chalk.bold(suite.description)));
-                        console.log(chalk.red(`  └─ ${failure.description}`));
-                        console.log(chalk.red(`     ${failure.error.message}`));
-                    });
-                }
-
-            });
-        }
-    }
 }
 
 export const state = new TestState();

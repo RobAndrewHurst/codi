@@ -25,9 +25,7 @@ export async function it(description, callback) {
         test.status = 'passed';
         test.duration = performance.now() - test.startTime;
         state.passedTests++;
-        if (!state.options?.quiet) {
-            console.log(chalk.green(` ✅ ${description} (${test.duration.toFixed(2)}ms)`));
-        }
+
     } catch (error) {
 
         test.status = 'failed';
@@ -35,12 +33,6 @@ export async function it(description, callback) {
         test.duration = performance.now() - test.startTime;
         state.failedTests++;
 
-        if (!state.options?.quiet) {
-
-            console.error(chalk.red(` ⛔ ${description} (${test.duration.toFixed(2)}ms)`));
-            console.error(chalk.red(`   ${error.message}`));
-
-        }
     }
 
     state.currentSuite.tests.push(test);

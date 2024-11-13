@@ -83,9 +83,9 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
  * @param {Function} testFn - Test function to run
  * @returns {Promise<object>} Test results
  */
-export async function runTestFunction(testFn, options) {
+export async function runTestFunction(testFn, options, description) {
     const suite = {
-        description: `Function: ${testFn.name}`,
+        description: description ? description : `Function: ${testFn.name}`,
         tests: [],
         startTime: performance.now()
     };
@@ -107,7 +107,9 @@ export async function runTestFunction(testFn, options) {
         state.popSuite();
     }
 
-    state.printSummary();
+    if (options.showSummary) {
+        state.printSummary();
+    }
 
     return {
         passedTests: state.passedTests,

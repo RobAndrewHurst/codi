@@ -4,7 +4,7 @@ import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, ass
 await describe('I am an Example Test Suite', () => {
 
   it('should pass equality assertion', () => {
-    assertEqual(1, 2, 'Expected 1 to equal 1');
+    assertEqual(1, 1, 'Expected 1 to equal 1');
   });
 
   it('should pass inequality assertion', () => {
@@ -37,12 +37,11 @@ await describe('I am an Example Test Suite', () => {
   });
 
 });
-// Nested describe for a new context
-await describe('Running testFunction', async () => {
-  function testFunction() {
-    it('First', () => {
-      assertEqual(1, 2, 'Expected 1 to equal 1');
-    });
-  }
-  await runTestFunction(testFunction);
-});
+
+await runTestFunction(testFunction, { showSummary: false });
+
+function testFunction() {
+  it('First', () => {
+    assertEqual(1, 2, 'Expected 1 to equal 1');
+  });
+}
