@@ -8,6 +8,7 @@ import assertions from './assertions/_assertions.js';
 // Core exports
 export { describe } from './core/describe.js';
 export { it } from './core/it.js';
+export { state } from './state/TestState.js'
 
 // Runner exports - re-export everything
 export {
@@ -29,7 +30,7 @@ export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
 export const assertNoDuplicates = assertions.assertNoDuplicates;
 
-export const version = 'v0.0.46';
+export const version = 'v0.0.47';
 
 /**
  * CLI entry point for running tests
