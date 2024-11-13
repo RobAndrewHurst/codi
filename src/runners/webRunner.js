@@ -41,9 +41,7 @@ export async function runWebTestFile(testFile, options) {
 export async function runWebTests(testFiles, options) {
 
     const defaults = {
-        parallel: false,
         quiet: false,
-        batchSize: 5,
         showSummary: true
     }
 
@@ -57,34 +55,8 @@ export async function runWebTests(testFiles, options) {
     }
 
     try {
-        if (parallel) {
-            if (batchSize > 0) {
-                // Run tests in batches
-                const batches = [];
-                for (let i = 0; i < testFiles.length; i += batchSize) {
-                    batches.push(testFiles.slice(i, i + batchSize));
-                }
-
-                for (const [index, batch] of batches.entries()) {
-                    if (!quiet) {
-                        console.log(chalk.blue(`\nBatch ${index + 1}/${batches.length}`));
-                    }
-
-                    await Promise.all(
-                        batch.map(file => runWebTestFile(file, options))
-                    );
-                }
-            } else {
-                // Run all tests in parallel
-                await Promise.all(
-                    testFiles.map(file => runWebTestFile(file, options))
-                );
-            }
-        } else {
-            // Run tests sequentially
-            for (const file of testFiles) {
-                await runWebTestFile(file, options);
-            }
+        for (const file of testFiles) {
+            await runWebTestFile(file, options);
         }
     } catch (error) {
         console.error(chalk.red('\nTest execution failed:'));
