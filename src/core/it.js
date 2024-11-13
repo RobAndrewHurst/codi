@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { state } from '../state/TestState.js';
 
 /**
@@ -10,12 +9,13 @@ import { state } from '../state/TestState.js';
  * @returns {Promise<void>}
  * @throws {Error} If called outside a describe block
  */
-export async function it(description, callback, suiteDescription) {
-    // Find the suite by its description
-    const suite = state.suiteStack.find(s => s.description === suiteDescription);
+export async function it(description, callback, suitePath) {
+    const suite = suitePath
+        ? state.getSuiteByPath(suitePath)
+        : state.getCurrentSuite();
 
     if (!suite) {
-        throw new Error(`Cannot find test suite with description: ${suiteDescription}`);
+        throw new Error('Test case defined outside of describe block');
     }
 
     const test = {
@@ -35,6 +35,5 @@ export async function it(description, callback, suiteDescription) {
         state.failedTests++;
     }
 
-    // Add the test to the correct suite
-    suite.tests.push(test);
+    state.addTestToSuite(suite.fullPath, test);
 }
