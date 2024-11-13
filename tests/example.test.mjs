@@ -1,6 +1,5 @@
 import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates, runTestFunction } from '../src/testRunner.js';
 
-// First test suite
 await describe('I am an Example Test Suite', () => {
 
   it('should pass equality assertion', () => {
@@ -40,7 +39,6 @@ await describe('I am an Example Test Suite', () => {
 
 
 await runTestFunction(testFunction);
-
 
 function testFunction() {
   describe('First Layer', () => {

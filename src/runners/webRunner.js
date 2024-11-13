@@ -1,5 +1,6 @@
 import { state } from '../state/TestState.js';
 import chalk from 'chalk';
+import { runTestFunction } from './nodeRunner.js';
 
 /**
  * Run a web test file
@@ -103,4 +104,33 @@ export async function runWebTests(testFiles, options) {
     }
 
     return summary;
+}
+
+/**
+ * Run a single test function
+ * @async
+ * @function runTestFunction
+ * @param {Function} testFn - Test function to run
+ * @returns {Promise<object>} Test results
+ */
+export async function runWebTestFunction(testFn, options) {
+
+    options ??= {
+        quiet: false,
+        showSummary: true
+    }
+
+    state.setOptions(options);
+
+    await runTestFunction(testFn);
+
+    if (options.showSummary) {
+        state.printSummary();
+    }
+
+    return {
+        passedTests: state.passedTests,
+        failedTests: state.failedTests,
+        testResults: state.testResults
+    };
 }

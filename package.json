@@ -9,6 +9,7 @@
     },
     "scripts": {
         "test": "bun --bun cli.js tests --returnResults",
+        "test_web": "bun --bun ./tests/webfunction.js",
         "version": "bun --bun cli.js --version"
     },
     "keywords": [
