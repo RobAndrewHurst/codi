@@ -19,7 +19,7 @@ export async function describe(description, callback) {
     state.pushSuite(suite);
 
     try {
-        await Promise.resolve(callback());
+        await Promise.resolve(callback(description));
     } catch (error) {
         console.error(chalk.red(`Suite failed: ${description}`));
         console.error(chalk.red(error.stack));

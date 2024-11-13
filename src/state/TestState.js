@@ -64,15 +64,6 @@ class TestState {
     }
 
     /**
-     * Get the current test suite
-     * @method
-     * @returns {object|null} Current test suite or null if none active
-     */
-    get currentSuite() {
-        return this.suiteStack[this.suiteStack.length - 1] || null;
-    }
-
-    /**
      * Add a new suite to the stack
      * @method
      * @param {object} suite - Test suite to add

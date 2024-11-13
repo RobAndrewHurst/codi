@@ -97,7 +97,7 @@ export async function runTestFunction(testFn, options, description) {
     }
 
     try {
-        await Promise.resolve(testFn());
+        await Promise.resolve(testFn(suite.description));
     } catch (error) {
         console.error(`Error in test ${testFn.name}:`, error);
         state.failedTests++;
