@@ -12,16 +12,12 @@ class TestState extends EventEmitter {
         this.passedTests = 0;
         /** @type {number} Number of failed tests */
         this.failedTests = 0;
-        /** @type {Array} Collection of test results */
-        this.testResults = [];
         /** @type {Array} Stack of active test suites */
-        this.suiteStack = [];
+        this.suiteStack = {};
         /** @type {number|null} Test start time */
         this.startTime = null;
         /** @type {object} options */
         this.options = {};
-        /** @type {Map} Map of suite paths to suite objects */
-        this.suiteMap = new Map();
     }
 
     setOptions(options) {
@@ -35,9 +31,7 @@ class TestState extends EventEmitter {
     resetCounters() {
         this.passedTests = 0;
         this.failedTests = 0;
-        this.testResults = [];
-        this.suiteStack = [];
-        this.suiteMap.clear();
+        this.suiteStack = {};
         this.emit('stateReset');
     }
 
@@ -56,16 +50,22 @@ class TestState extends EventEmitter {
      * @param {object} suite - Test suite to add
      */
     pushSuite(suite) {
+
+        let parentSuite = '';
         // Get parent suite if exists
-        const parentSuite = this.suiteStack[this.suiteStack.length - 1];
+        if (suite.parentId) {
+            parentSuite = this.suiteStack[suite.parentId];
+        }
+        else {
+            if (this.suiteStack[suite.id]) {
+                console.warn(chalk.yellow(`There is already a Suite with the ID: ${suite.id}`));
+                suite.id = suite.description + suite.id;
+            }
+        }
 
         // Create nested suite structure
         const nestedSuite = {
             ...suite,
-            fullPath: parentSuite
-                ? `${parentSuite.fullPath} > ${suite.description}`
-                : suite.description,
-            parent: parentSuite,
             children: [],
             tests: []
         };
@@ -73,43 +73,37 @@ class TestState extends EventEmitter {
         // Add to parent's children if exists
         if (parentSuite) {
             parentSuite.children.push(nestedSuite);
+        } else {
+            this.suiteStack[suite.id] = nestedSuite;
         }
 
-        this.suiteStack.push(nestedSuite);
-        this.suiteMap.set(nestedSuite.fullPath, nestedSuite);
-        this.emit('suitePushed', nestedSuite);
+        // this.emit('suitePushed', nestedSuite);
 
         return nestedSuite;
     }
 
     /**
-     * Remove and return the top suite from the stack
-     * @method
-     * @returns {object|undefined} Removed test suite
-     */
-    popSuite() {
-        const suite = this.suiteStack.pop();
-        this.emit('suitePopped', suite);
-        return suite;
-    }
-
-    /**
-     * Get current active suite
-     * @method
-     * @returns {object|undefined} Current suite
-     */
-    getCurrentSuite() {
-        return this.suiteStack[this.suiteStack.length - 1];
-    }
-
-    /**
-     * Get suite by full path
+     * Get suite by id.
      * @method
      * @param {string} path - Full suite path
      * @returns {object|undefined} Found suite
      */
-    getSuiteByPath(path) {
-        return this.suiteMap.get(path);
+    getSuite(params) {
+        let suite = this.suiteStack[params.parentId];
+        if (suite) {
+            return suite;
+        }
+
+        for (const nestedSuite of Object.values(this.suiteStack)) {
+            if (nestedSuite.children && nestedSuite.children.length > 0) {
+                const childSuite = nestedSuite.children.find(child => child.id === params.parentId);
+                if (childSuite) {
+                    return childSuite;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -118,52 +112,16 @@ class TestState extends EventEmitter {
      * @param {string} suitePath - Full suite path
      * @param {object} test - Test case to add
      */
-    addTestToSuite(suitePath, test) {
-        const suite = this.getSuiteByPath(suitePath);
-        if (!suite) {
-            throw new Error(`Cannot find suite: ${suitePath}`);
-        }
+    addTestToSuite(suite, test) {
         suite.tests.push(test);
         this.emit('testAdded', { suite, test });
     }
 
     printSummary() {
-        if (this.testResults.length > 0) {
-            // Helper function to print suite and its children
-            const printSuite = (suite, indent = 0) => {
-                const indentation = '  '.repeat(indent);
 
-                // Print suite's tests
-                let results = suite.tests;
-                if (this.options.quiet) {
-                    results = results.filter(result => result.status === 'failed');
-                }
-
-                // Print suite description
-                if (results.length > 0) {
-                    console.log('\n' + indentation + chalk.yellow(chalk.bold(suite.description)));
-                }
-
-                results.forEach(result => {
-                    if (result.status === 'failed') {
-                        console.log(indentation + chalk.red(`  └─ ⛔ ${result.description} (${result.duration.toFixed(2)}ms)`));
-                        console.log(indentation + chalk.red(`     ${result.error.message}`));
-                    } else {
-                        console.log(indentation + chalk.green(`  └─ ✅ ${result.description} (${result.duration.toFixed(2)}ms)`));
-                    }
-                });
-
-                // Print child suites
-                if (suite.children) {
-                    suite.children.forEach(child => printSuite(child, indent + 1));
-                }
-            };
-
-            // Print only top-level suites (they will handle their children)
-            this.testResults
-                .filter(suite => !suite.parent)
-                .forEach(suite => printSuite(suite));
-        }
+        Object.keys(this.suiteStack).forEach(id => {
+            printSuite(this.suiteStack[id], 0, this.options);
+        });
 
         console.log(chalk.bold.cyan('\nTest Summary:'));
         console.log(chalk.green(`  Passed: ${this.passedTests}`));
@@ -173,5 +131,35 @@ class TestState extends EventEmitter {
         this.emit('summaryPrinted');
     }
 }
+
+// Helper function to print suite and its children
+const printSuite = (suite, indent, options) => {
+    const indentation = '  '.repeat(indent);
+
+    // Print suite's tests
+    let results = suite.tests;
+    if (options.quiet) {
+        results = results.filter(result => result.status === 'failed');
+    }
+
+    // Print suite description
+    if (suite.children.length > 0 || results.length > 0) {
+        console.log('\n' + indentation + chalk.yellow(chalk.bold(suite.description)));
+    }
+
+    results.forEach(result => {
+        if (result.status === 'failed') {
+            console.log(indentation + chalk.red(`  └─ ⛔ ${result.description} (${result.duration.toFixed(2)}ms)`));
+            console.log(indentation + chalk.red(`     ${result.error.message}`));
+        } else {
+            console.log(indentation + chalk.green(`  └─ ✅ ${result.description} (${result.duration.toFixed(2)}ms)`));
+        }
+    });
+
+    // Print child suites
+    if (suite.children) {
+        suite.children.forEach(child => printSuite(child, indent + 1, options));
+    }
+};
 
 export const state = new TestState();

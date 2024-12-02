@@ -68,7 +68,7 @@ export async function runWebTests(testFiles, options) {
         passedTests: state.passedTests,
         failedTests: state.failedTests,
         executionTime: state.getExecutionTime(),
-        testResults: state.testResults
+        suiteStack: state.suiteStack
     };
 
     if (options.showSummary) {
@@ -103,6 +103,6 @@ export async function runWebTestFunction(testFn, options) {
     return {
         passedTests: state.passedTests,
         failedTests: state.failedTests,
-        testResults: state.testResults
+        suiteStack: state.suiteStack
     };
 }

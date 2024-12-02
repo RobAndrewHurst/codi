@@ -9,22 +9,23 @@ import { state } from '../state/TestState.js';
  * @param {Function} callback - Suite callback function
  * @returns {Promise<void>}
  */
-export async function describe(description, callback) {
+export async function describe(params, callback) {
+
     const suite = {
-        description,
+        description: params.description,
+        id: params.id,
+        parentId: params.parentId,
         startTime: performance.now()
     };
 
     const nestedSuite = state.pushSuite(suite);
 
     try {
-        await Promise.resolve(callback(nestedSuite.fullPath));
+        await Promise.resolve(callback(suite));
     } catch (error) {
         console.error(chalk.red(`Suite failed: ${nestedSuite.fullPath}`));
         console.error(chalk.red(error.stack));
     } finally {
         nestedSuite.duration = performance.now() - nestedSuite.startTime;
-        state.testResults.push(nestedSuite);
-        state.popSuite();
     }
 }

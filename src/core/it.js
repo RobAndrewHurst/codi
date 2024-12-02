@@ -9,17 +9,16 @@ import { state } from '../state/TestState.js';
  * @returns {Promise<void>}
  * @throws {Error} If called outside a describe block
  */
-export async function it(description, callback, suitePath) {
-    const suite = suitePath
-        ? state.getSuiteByPath(suitePath)
-        : state.getCurrentSuite();
+export async function it(params, callback) {
+
+    const suite = state.getSuite(params)
 
     if (!suite) {
-        throw new Error('Test case defined outside of describe block');
+        throw new Error('A test needs to belong to a suite');
     }
 
     const test = {
-        description,
+        description: params.description,
         startTime: performance.now()
     };
 
@@ -35,5 +34,5 @@ export async function it(description, callback, suitePath) {
         state.failedTests++;
     }
 
-    state.addTestToSuite(suite.fullPath, test);
+    state.addTestToSuite(suite, test);
 }

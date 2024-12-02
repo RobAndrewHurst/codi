@@ -62,7 +62,7 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
         return {
             passedTests: state.passedTests,
             failedTests: state.failedTests,
-            testResults: state.testResults,
+            suiteStack: state.suiteStack,
             executionTime: state.getExecutionTime()
         };
     }
@@ -95,6 +95,6 @@ export async function runTestFunction(testFn) {
     return {
         passedTests: state.passedTests,
         failedTests: state.failedTests,
-        testResults: state.testResults
+        suiteStack: state.suiteStack
     };
 }
