@@ -1,4 +1,4 @@
-# Codi Test Framework 🐶 
+# Codi Test Framework 🐶
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![example workflow](https://github.com/RobAndrewHurst/codi/actions/workflows/unit_tests.yml/badge.svg)
@@ -19,7 +19,7 @@ Codi is a lightweight JavaScript test framework that allows you to write and run
 
 To use Codi in your project, you need to have Node.js installed. You can install Codi as a development dependency using npm:
 
-```
+```bash
 npm install --save-dev codi-test-framework
 ```
 
@@ -71,7 +71,7 @@ runTests('./tests');
 
 You can also run the tests from the command line using the `runCLI` function:
 
-```
+```bash
 codi ./tests
 ```
 
