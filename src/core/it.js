@@ -11,7 +11,7 @@ import { state } from '../state/TestState.js';
  */
 export async function it(params, callback) {
 
-    const suite = state.getSuite(params)
+    const suite = state.getSuite(params.parentId)
 
     if (!suite) {
         throw new Error('A test needs to belong to a suite');

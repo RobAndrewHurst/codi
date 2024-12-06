@@ -70,7 +70,7 @@ function testFunction() {
 }
 
 function secondFunction() {
-  describe({ name: 'second Layer', id: 'first_layer' }, () => {
+  describe({ name: 'second Layer', id: 'second_layer' }, () => {
     it({ name: 'Second', parentId: 'second_layer' }, () => {
       assertEqual(1, 1, 'Expected 1 to equal 1');
     });

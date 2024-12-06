@@ -54,7 +54,7 @@ class TestState extends EventEmitter {
         let parentSuite = '';
         // Get parent suite if exists
         if (suite.parentId) {
-            parentSuite = this.suiteStack[suite.parentId];
+            parentSuite = this.getSuite(suite.parentId)
         }
         else {
             if (this.suiteStack[suite.id]) {
@@ -88,18 +88,49 @@ class TestState extends EventEmitter {
      * @param {string} path - Full suite path
      * @returns {object|undefined} Found suite
      */
-    getSuite(params) {
-        let suite = this.suiteStack[params.parentId];
+    getSuite(parentId) {
+        let suite = this.suiteStack[parentId];
+
         if (suite) {
             return suite;
         }
 
-        for (const nestedSuite of Object.values(this.suiteStack)) {
-            if (nestedSuite.children && nestedSuite.children.length > 0) {
-                const childSuite = nestedSuite.children.find(child => child.id === params.parentId);
-                if (childSuite) {
-                    return childSuite;
+        return this.searchSuiteStack(parentId, this.suiteStack);
+    }
+
+
+    /**
+     * Search the stack  on each child 
+     * @param {string} parentId 
+     * @param {object} suiteStack 
+     * @returns {object}
+     */
+    searchSuiteStack(parentId, suiteStack) {
+        // Helper function to search recursively through children
+        function searchRecursively(suite) {
+            // Check if current suite matches the ID
+            if (suite.id === parentId) {
+                return suite;
+            }
+
+            // If suite has children, search through them
+            if (suite.children && suite.children.length > 0) {
+                for (const child of suite.children) {
+                    const result = searchRecursively(child);
+                    if (result) {
+                        return result;
+                    }
                 }
+            }
+
+            return null;
+        }
+
+        // Search through each top-level suite in the stack
+        for (const nestedSuite of Object.values(suiteStack)) {
+            const result = searchRecursively(nestedSuite);
+            if (result) {
+                return result;
             }
         }
 
