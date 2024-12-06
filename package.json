@@ -1,6 +1,6 @@
 {
     "name": "codi-test-framework",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A simple test framework for JavaScript",
     "main": "src/testRunner.js",
     "type": "module",

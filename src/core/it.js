@@ -4,7 +4,7 @@ import { state } from '../state/TestState.js';
  * Create a test case
  * @async
  * @function it
- * @param {string} description - Test case description
+ * @param {string} name - Test case name
  * @param {Function} callback - Test callback function
  * @returns {Promise<void>}
  * @throws {Error} If called outside a describe block
@@ -18,7 +18,7 @@ export async function it(params, callback) {
     }
 
     const test = {
-        description: params.description,
+        name: params.name,
         startTime: performance.now()
     };
 

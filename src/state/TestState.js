@@ -59,7 +59,7 @@ class TestState extends EventEmitter {
         else {
             if (this.suiteStack[suite.id]) {
                 console.warn(chalk.yellow(`There is already a Suite with the ID: ${suite.id}`));
-                suite.id = suite.description + suite.id;
+                suite.id = suite.name + suite.id;
             }
         }
 
@@ -142,17 +142,17 @@ const printSuite = (suite, indent, options) => {
         results = results.filter(result => result.status === 'failed');
     }
 
-    // Print suite description
+    // Print suite name
     if (suite.children.length > 0 || results.length > 0) {
-        console.log('\n' + indentation + chalk.yellow(chalk.bold(suite.description)));
+        console.log('\n' + indentation + chalk.yellow(chalk.bold(suite.name)));
     }
 
     results.forEach(result => {
         if (result.status === 'failed') {
-            console.log(indentation + chalk.red(`  └─ ⛔ ${result.description} (${result.duration.toFixed(2)}ms)`));
+            console.log(indentation + chalk.red(`  └─ ⛔ ${result.name} (${result.duration.toFixed(2)}ms)`));
             console.log(indentation + chalk.red(`     ${result.error.message}`));
         } else {
-            console.log(indentation + chalk.green(`  └─ ✅ ${result.description} (${result.duration.toFixed(2)}ms)`));
+            console.log(indentation + chalk.green(`  └─ ✅ ${result.name} (${result.duration.toFixed(2)}ms)`));
         }
     });
 
