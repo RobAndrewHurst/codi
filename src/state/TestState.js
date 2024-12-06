@@ -1,13 +1,10 @@
 import chalk from 'chalk';
-import EventEmitter from 'events';
-
 /**
  * Class representing the state of test execution
  * @class TestState
  */
-class TestState extends EventEmitter {
+class TestState {
     constructor() {
-        super();
         /** @type {number} Number of passed tests */
         this.passedTests = 0;
         /** @type {number} Number of failed tests */
@@ -25,19 +22,16 @@ class TestState extends EventEmitter {
             ...this.options,
             ...options
         };
-        this.emit('optionsUpdated', this.options);
     }
 
     resetCounters() {
         this.passedTests = 0;
         this.failedTests = 0;
         this.suiteStack = {};
-        this.emit('stateReset');
     }
 
     startTimer() {
         this.startTime = performance.now();
-        this.emit('timerStarted', this.startTime);
     }
 
     getExecutionTime() {
@@ -77,7 +71,6 @@ class TestState extends EventEmitter {
             this.suiteStack[suite.id] = nestedSuite;
         }
 
-        // this.emit('suitePushed', nestedSuite);
 
         return nestedSuite;
     }
@@ -145,7 +138,6 @@ class TestState extends EventEmitter {
      */
     addTestToSuite(suite, test) {
         suite.tests.push(test);
-        this.emit('testAdded', { suite, test });
     }
 
     printSummary() {
@@ -159,7 +151,6 @@ class TestState extends EventEmitter {
         console.log(chalk.red(`  Failed: ${this.failedTests}`));
         console.log(chalk.blue(`  Time: ${this.getExecutionTime()}s`));
 
-        this.emit('summaryPrinted');
     }
 }
 
