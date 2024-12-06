@@ -30,13 +30,13 @@ export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
 export const assertNoDuplicates = assertions.assertNoDuplicates;
 
-export const version = 'v1.0.0';
+export const version = 'v1.0.3';
 
 /**
  * CLI entry point for running tests
  * @function runCLI
  */
-export async function runCLI() {
+export async function runCodi() {
   const testDirectory = process.argv[2];
   const returnResults = process.argv.includes('--returnResults');
   const returnVersion = process.argv.includes('--version');
