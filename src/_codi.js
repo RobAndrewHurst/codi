@@ -19,4 +19,4 @@ export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
 export const assertNoDuplicates = assertions.assertNoDuplicates;
 
-export const version = 'v1.0.5'
+export const version = 'v1.0.7'

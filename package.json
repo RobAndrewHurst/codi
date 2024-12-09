@@ -3,13 +3,12 @@
     "version": "1.0.6",
     "description": "A simple test framework for JavaScript",
     "type": "module",
-    "browser": "./dist/web.js",
     "exports": {
         ".": {
-            "browser": "./dist/web.js",
-            "default": "./dist/web.js"
+            "import": "./dist/web.js"
         }
     },
+    "module": "./dist/web.js",
     "bin": {
         "codi": "cli.js"
     },

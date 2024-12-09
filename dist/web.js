@@ -1,3 +1,10 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+
 // src/assertions/assertEqual.js
 import chalk from "chalk";
 function assertEqual(actual, expected, message) {
@@ -88,6 +95,17 @@ import chalk8 from "chalk";
 import chalk7 from "chalk";
 var TestState = class {
   constructor() {
+    // Track all running tests
+    __publicField(this, "testTracker", {
+      pendingTests: /* @__PURE__ */ new Set(),
+      addTest: function(promise) {
+        this.pendingTests.add(promise);
+        promise.finally(() => this.pendingTests.delete(promise));
+      },
+      waitForAll: function() {
+        return Promise.all(Array.from(this.pendingTests));
+      }
+    });
     this.passedTests = 0;
     this.failedTests = 0;
     this.suiteStack = {};
@@ -198,17 +216,6 @@ var TestState = class {
     console.log(chalk7.red(`  Failed: ${this.failedTests}`));
     console.log(chalk7.blue(`  Time: ${this.getExecutionTime()}s`));
   }
-  // Track all running tests
-  testTracker = {
-    pendingTests: /* @__PURE__ */ new Set(),
-    addTest: function(promise) {
-      this.pendingTests.add(promise);
-      promise.finally(() => this.pendingTests.delete(promise));
-    },
-    waitForAll: function() {
-      return Promise.all(Array.from(this.pendingTests));
-    }
-  };
 };
 var printSuite = (suite, indent, options) => {
   const indentation = "  ".repeat(indent);
@@ -291,7 +298,7 @@ async function runWebTestFile(testFile, options) {
   const defaults = {
     silent: false
   };
-  options ??= defaults;
+  options ?? (options = defaults);
   try {
     const testPromise = import(testFile);
     await Promise.resolve(testPromise);
@@ -306,7 +313,7 @@ async function runWebTests(testFiles, options) {
     quiet: false,
     showSummary: true
   };
-  options ??= defaults;
+  options ?? (options = defaults);
   state.resetCounters();
   state.startTimer();
   if (!options.quiet) {
@@ -334,10 +341,10 @@ Running ${testFiles.length} web test file(s)`));
   return summary;
 }
 async function runWebTestFunction(testFn, options) {
-  options ??= {
+  options ?? (options = {
     quiet: false,
     showSummary: true
-  };
+  });
   state.setOptions(options);
   try {
     await Promise.resolve(testFn());
