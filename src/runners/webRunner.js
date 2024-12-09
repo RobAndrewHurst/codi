@@ -1,6 +1,5 @@
 import { state } from '../state/TestState.js';
 import chalk from 'chalk';
-import { runTestFunction } from './nodeRunner.js';
 
 /**
  * Run a web test file

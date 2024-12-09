@@ -1,4 +1,6 @@
-import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates, runTestFunction } from '../src/testRunner.js';
+import { describe, it, assertEqual, assertNotEqual, assertTrue, assertFalse, assertThrows, assertNoDuplicates } from '../src/_codi.js';
+
+import { runTestFunction } from '../src/testRunner.js';
 
 const params = {
   name: 'I am an Example Test Suite',

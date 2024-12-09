@@ -1,16 +1,29 @@
 {
     "name": "codi-test-framework",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "A simple test framework for JavaScript",
-    "main": "src/testRunner.js",
     "type": "module",
-    "bin": {
-        "codi": "codi.js"
+    "browser": "./dist/web.js",
+    "exports": {
+        ".": {
+            "browser": "./dist/web.js",
+            "node": "./dist/node.js",
+            "default": "./dist/node.js"
+        }
     },
+    "bin": {
+        "codi": "cli.js"
+    },
+    "files": [
+        "dist",
+        "cli.js"
+    ],
     "scripts": {
-        "test": "bun --bun codi.js tests --returnResults",
+        "build": "node esbuild.config.js",
+        "test": "bun --bun cli.js tests --returnResults",
         "test_web": "bun --bun ./tests/webfunction.js",
-        "version": "bun --bun codi.js --version"
+        "version": "bun --bun cli.js --version",
+        "prepublishOnly": "npm run build"
     },
     "keywords": [
         "test",
@@ -22,5 +35,8 @@
     "dependencies": {
         "chalk": "^5.3.0",
         "figlet": "^1.7.0"
+    },
+    "devDependencies": {
+        "esbuild": "^0.19.11"
     }
 }

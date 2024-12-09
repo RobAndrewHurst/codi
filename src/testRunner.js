@@ -3,34 +3,13 @@ import fs from 'fs';
 import path from 'path';
 // Import runTests directly to use in runCLI
 import { runTests as nodeRunTests } from './runners/nodeRunner.js';
-import assertions from './assertions/_assertions.js';
-
-// Core exports
-export { describe } from './core/describe.js';
-export { it } from './core/it.js';
-export { state } from './state/TestState.js'
-
 // Runner exports - re-export everything
 export {
   runTests,
   runTestFunction
 } from './runners/nodeRunner.js';
 
-export {
-  runWebTests,
-  runWebTestFile,
-  runWebTestFunction
-} from './runners/webRunner.js';
-
-// Assertion exports
-export const assertEqual = assertions.assertEqual;
-export const assertNotEqual = assertions.assertNotEqual;
-export const assertTrue = assertions.assertTrue;
-export const assertFalse = assertions.assertFalse;
-export const assertThrows = assertions.assertThrows;
-export const assertNoDuplicates = assertions.assertNoDuplicates;
-
-export const version = 'v1.0.4';
+import { version } from './_codi.js';
 
 /**
  * CLI entry point for running tests
