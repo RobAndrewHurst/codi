@@ -3,7 +3,7 @@ import * as esbuild from 'esbuild';
 await esbuild.build({
     entryPoints: ['./src/_codi.js'],
     bundle: true,
-    outfile: 'dist/web.js',
+    outfile: 'browser.js',
     format: 'esm',
     platform: 'browser',
     target: ['es2020'],

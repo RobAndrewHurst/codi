@@ -4,16 +4,14 @@
     "description": "A simple test framework for JavaScript",
     "type": "module",
     "exports": {
-        ".": {
-            "import": "./dist/web.js"
-        }
+        ".": "./browser.js"
     },
     "module": "./dist/web.js",
     "bin": {
         "codi": "cli.js"
     },
     "files": [
-        "dist",
+        "browser.js",
         "cli.js"
     ],
     "scripts": {

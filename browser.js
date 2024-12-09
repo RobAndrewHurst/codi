@@ -98,11 +98,10 @@ var TestState = class {
     // Track all running tests
     __publicField(this, "testTracker", {
       pendingTests: /* @__PURE__ */ new Set(),
-      addTest: function(promise) {
-        this.pendingTests.add(promise);
-        promise.finally(() => this.pendingTests.delete(promise));
+      addTest: function (promise) {
+        this.pendingTests.add(promise); promise.finally(() => this.pendingTests.delete(promise));
       },
-      waitForAll: function() {
+      waitForAll: function () {
         return Promise.all(Array.from(this.pendingTests));
       }
     });
@@ -370,7 +369,7 @@ var assertTrue2 = assertions_default.assertTrue;
 var assertFalse2 = assertions_default.assertFalse;
 var assertThrows2 = assertions_default.assertThrows;
 var assertNoDuplicates2 = assertions_default.assertNoDuplicates;
-var version = "v1.0.5";
+var version = "v1.0.7";
 export {
   assertEqual2 as assertEqual,
   assertFalse2 as assertFalse,
