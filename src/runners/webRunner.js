@@ -90,11 +90,18 @@ export async function runWebTestFunction(testFn, options) {
     options ??= {
         quiet: false,
         showSummary: true
-    }
+    };
 
     state.setOptions(options);
 
-    await runTestFunction(testFn);
+    try {
+        await Promise.resolve(testFn());
+        // Wait for all pending tests to complete
+        await state.testTracker.waitForAll();
+    } catch (error) {
+        console.error('Error in test suite:', error);
+        state.failedTests++;
+    }
 
     if (options.showSummary) {
         state.printSummary();

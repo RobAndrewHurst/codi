@@ -152,6 +152,18 @@ class TestState {
         console.log(chalk.blue(`  Time: ${this.getExecutionTime()}s`));
 
     }
+
+    // Track all running tests
+    testTracker = {
+        pendingTests: new Set(),
+        addTest: function (promise) {
+            this.pendingTests.add(promise);
+            promise.finally(() => this.pendingTests.delete(promise));
+        },
+        waitForAll: function () {
+            return Promise.all(Array.from(this.pendingTests));
+        }
+    };
 }
 
 // Helper function to print suite and its children
@@ -183,5 +195,7 @@ const printSuite = (suite, indent, options) => {
         suite.children.forEach(child => printSuite(child, indent + 1, options));
     }
 };
+
+
 
 export const state = new TestState();

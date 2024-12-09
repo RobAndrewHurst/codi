@@ -20,12 +20,17 @@ export async function describe(params, callback) {
 
     const nestedSuite = state.pushSuite(suite);
 
-    try {
-        await Promise.resolve(callback(suite));
-    } catch (error) {
-        console.error(chalk.red(`Suite failed: ${nestedSuite.fullPath}`));
-        console.error(chalk.red(error.stack));
-    } finally {
-        nestedSuite.duration = performance.now() - nestedSuite.startTime;
-    }
+    const suitePromise = (async () => {
+        try {
+            await Promise.resolve(callback(suite));
+        } catch (error) {
+            console.error(chalk.red(`Suite failed: ${nestedSuite.fullPath}`));
+            console.error(chalk.red(error.stack));
+        } finally {
+            nestedSuite.duration = performance.now() - nestedSuite.startTime;
+        }
+    })();
+
+    state.testTracker.addTest(suitePromise);
+    return suitePromise;
 }

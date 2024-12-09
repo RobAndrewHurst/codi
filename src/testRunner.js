@@ -30,7 +30,7 @@ export const assertFalse = assertions.assertFalse;
 export const assertThrows = assertions.assertThrows;
 export const assertNoDuplicates = assertions.assertNoDuplicates;
 
-export const version = 'v1.0.3';
+export const version = 'v1.0.4';
 
 /**
  * CLI entry point for running tests
