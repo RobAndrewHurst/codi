@@ -364,13 +364,32 @@ async function runWebTestFunction(testFn, options) {
 }
 
 // src/_codi.js
-var assertEqual2 = assertions_default.assertEqual;
-var assertNotEqual2 = assertions_default.assertNotEqual;
-var assertTrue2 = assertions_default.assertTrue;
-var assertFalse2 = assertions_default.assertFalse;
-var assertThrows2 = assertions_default.assertThrows;
-var assertNoDuplicates2 = assertions_default.assertNoDuplicates;
-var version = "v1.0.7";
+var codi = {
+  describe,
+  it,
+  state,
+  runWebTests,
+  runWebTestFile,
+  runWebTestFunction,
+  assertEqual: assertions_default.assertEqual,
+  assertNotEqual: assertions_default.assertNotEqual,
+  assertTrue: assertions_default.assertTrue,
+  assertFalse: assertions_default.assertFalse,
+  assertThrows: assertions_default.assertThrows,
+  assertNoDuplicates: assertions_default.assertNoDuplicates,
+  version: "v1.0.7"
+};
+globalThis.codi = codi;
+var {
+  assertEqual: assertEqual2,
+  assertNotEqual: assertNotEqual2,
+  assertTrue: assertTrue2,
+  assertFalse: assertFalse2,
+  assertThrows: assertThrows2,
+  assertNoDuplicates: assertNoDuplicates2,
+  version
+} = assertions_default;
+var codi_default = codi;
 export {
   assertEqual2 as assertEqual,
   assertFalse2 as assertFalse,
@@ -378,6 +397,7 @@ export {
   assertNotEqual2 as assertNotEqual,
   assertThrows2 as assertThrows,
   assertTrue2 as assertTrue,
+  codi_default as default,
   describe,
   it,
   runWebTestFile,
