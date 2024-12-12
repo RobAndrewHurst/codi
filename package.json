@@ -1,6 +1,6 @@
 {
     "name": "codi-test-framework",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "A simple test framework for JavaScript",
     "type": "module",
     "exports": {
