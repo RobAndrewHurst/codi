@@ -8,6 +8,8 @@ import {
     runWebTestFunction
 } from './runners/webRunner.js';
 
+const version = 'v1.0.11';
+
 // Create the codi object to hold all exports
 const codi = {
     describe,
@@ -22,7 +24,7 @@ const codi = {
     assertFalse: assertions.assertFalse,
     assertThrows: assertions.assertThrows,
     assertNoDuplicates: assertions.assertNoDuplicates,
-    version: 'v1.0.10'
+    version
 };
 
 // Assign codi to globalThis
@@ -35,7 +37,8 @@ export {
     state,
     runWebTests,
     runWebTestFile,
-    runWebTestFunction
+    runWebTestFunction,
+    version
 };
 
 export const {
@@ -44,8 +47,7 @@ export const {
     assertTrue,
     assertFalse,
     assertThrows,
-    assertNoDuplicates,
-    version
+    assertNoDuplicates
 } = assertions;
 
 // Export the entire codi object as default
