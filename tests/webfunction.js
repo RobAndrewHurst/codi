@@ -119,7 +119,7 @@ async function batchFour() {
             }),
             it({ name: 'Test 4.3', parentId: '4' }, async () => {
                 await simulateDelay(500);
-                assertEqual({ a: 1 }, { a: 2 }, 'Test 4.3 passed');
+                assertEqual({ a: 1 }, { a: 2 }, 'Test 4.3 failed');
                 console.log('Test 15')
             })
         ]);

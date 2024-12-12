@@ -98,10 +98,11 @@ var TestState = class {
     // Track all running tests
     __publicField(this, "testTracker", {
       pendingTests: /* @__PURE__ */ new Set(),
-      addTest: function (promise) {
-        this.pendingTests.add(promise); promise.finally(() => this.pendingTests.delete(promise));
+      addTest: function(promise) {
+        this.pendingTests.add(promise);
+        promise.finally(() => this.pendingTests.delete(promise));
       },
-      waitForAll: function () {
+      waitForAll: function() {
         return Promise.all(Array.from(this.pendingTests));
       }
     });

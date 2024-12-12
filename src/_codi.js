@@ -1,22 +1,41 @@
 import assertions from "./assertions/_assertions.js";
 
-// Core exports
-export { describe } from './core/describe.js';
-export { it } from './core/it.js';
-export { state } from './state/TestState.js';
+// Create the codi object to hold all exports
+const codi = {
+    describe: (await import('./core/describe.js')).describe,
+    it: (await import('./core/it.js')).it,
+    state: (await import('./state/TestState.js')).state,
+    runWebTests: (await import('./runners/webRunner.js')).runWebTests,
+    runWebTestFile: (await import('./runners/webRunner.js')).runWebTestFile,
+    runWebTestFunction: (await import('./runners/webRunner.js')).runWebTestFunction,
+    assertEqual: assertions.assertEqual,
+    assertNotEqual: assertions.assertNotEqual,
+    assertTrue: assertions.assertTrue,
+    assertFalse: assertions.assertFalse,
+    assertThrows: assertions.assertThrows,
+    assertNoDuplicates: assertions.assertNoDuplicates,
+    version: 'v1.0.9'
+};
 
-export {
+// Assign codi to globalThis
+globalThis.codi = codi;
+
+// Export everything individually
+export const {
+    describe,
+    it,
+    state,
     runWebTests,
     runWebTestFile,
-    runWebTestFunction
-} from './runners/webRunner.js';
-// Assertion exports
+    runWebTestFunction,
+    assertEqual,
+    assertNotEqual,
+    assertTrue,
+    assertFalse,
+    assertThrows,
+    assertNoDuplicates,
+    version
+} = codi;
 
-export const assertEqual = assertions.assertEqual;
-export const assertNotEqual = assertions.assertNotEqual;
-export const assertTrue = assertions.assertTrue;
-export const assertFalse = assertions.assertFalse;
-export const assertThrows = assertions.assertThrows;
-export const assertNoDuplicates = assertions.assertNoDuplicates;
-
-export const version = 'v1.0.7'
+// Export the entire codi object as default
+export default codi;
