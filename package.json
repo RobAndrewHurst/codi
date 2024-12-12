@@ -6,14 +6,11 @@
     "exports": {
         ".": "./browser.js"
     },
+    "main": "src/testRunner.js",
     "module": "./dist/web.js",
     "bin": {
         "codi": "cli.js"
     },
-    "files": [
-        "browser.js",
-        "cli.js"
-    ],
     "scripts": {
         "build": "node esbuild.config.js",
         "test": "bun --bun cli.js tests --returnResults",

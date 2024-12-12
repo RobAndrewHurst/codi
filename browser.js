@@ -364,6 +364,7 @@ async function runWebTestFunction(testFn, options) {
 }
 
 // src/_codi.js
+var version = "v1.0.11";
 var codi = {
   describe,
   it,
@@ -377,7 +378,7 @@ var codi = {
   assertFalse: assertions_default.assertFalse,
   assertThrows: assertions_default.assertThrows,
   assertNoDuplicates: assertions_default.assertNoDuplicates,
-  version: "v1.0.7"
+  version
 };
 globalThis.codi = codi;
 var {
@@ -386,8 +387,7 @@ var {
   assertTrue: assertTrue2,
   assertFalse: assertFalse2,
   assertThrows: assertThrows2,
-  assertNoDuplicates: assertNoDuplicates2,
-  version
+  assertNoDuplicates: assertNoDuplicates2
 } = assertions_default;
 var codi_default = codi;
 export {
