@@ -10,7 +10,7 @@ import {
 
 import { codepenLogging } from "./codepen/logging.js";
 
-const version = 'v1.0.15';
+const version = 'v1.0.16';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -41,7 +41,8 @@ export {
     runWebTests,
     runWebTestFile,
     runWebTestFunction,
-    version
+    version,
+    codepenLogging
 };
 
 export const {

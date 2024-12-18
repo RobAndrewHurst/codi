@@ -365,74 +365,72 @@ async function runWebTestFunction(testFn, options) {
 
 // src/codepen/logging.js
 function codepenLogging() {
-  var console2 = function() {
-    var following = false, pre = document.createElement("pre"), code = document.createElement("code");
-    pre.appendChild(code);
-    document.body.appendChild(pre);
-    var originalConsole = {
-      log: window.console.log,
-      info: window.console.info,
-      warn: window.console.warn,
-      error: window.console.error
-    };
-    window.console = {
-      clear,
-      follow,
-      log: function(...args) {
-        print("debug", ...args);
-        originalConsole.log(...args);
-      },
-      info: function(...args) {
-        print("info", ...args);
-        originalConsole.info(...args);
-      },
-      warn: function(...args) {
-        print("warn", ...args);
-        originalConsole.warn(...args);
-      },
-      error: function(...args) {
-        print("error", ...args);
-        originalConsole.error(...args);
-      }
-    };
-    function clear() {
-      while (code.hasChildNodes()) {
-        code.removeChild(code.lastChild);
-      }
+  var following = false, pre = document.createElement("pre"), code = document.createElement("code");
+  pre.appendChild(code);
+  document.body.appendChild(pre);
+  var originalConsole = {
+    log: window.console.log,
+    info: window.console.info,
+    warn: window.console.warn,
+    error: window.console.error
+  };
+  function clear() {
+    while (code.hasChildNodes()) {
+      code.removeChild(code.lastChild);
     }
-    function follow() {
-      following = true;
-    }
-    function print(className, ...objects) {
-      let s = objects.map((obj) => {
-        if (typeof obj === "string") {
-          return obj;
-        } else {
-          try {
-            return JSON.stringify(obj);
-          } catch (e) {
-            return String(obj);
-          }
+  }
+  function follow() {
+    following = true;
+  }
+  function print(className, ...objects) {
+    let s = objects.map((obj) => {
+      if (typeof obj === "string") {
+        return obj;
+      } else {
+        try {
+          return JSON.stringify(obj);
+        } catch (e) {
+          return String(obj);
         }
-      }).join(" ");
-      s = s.replace(/\[\d{1,2}m/g, "");
-      var span = document.createElement("span"), text = document.createTextNode(s + "\n");
-      span.setAttribute("class", className);
-      span.appendChild(text);
-      code.appendChild(span);
-      if (following) {
-        scrollToBottom();
       }
+    }).join(" ");
+    s = s.replace(/\[\d{1,2}m/g, "");
+    var span = document.createElement("span"), text = document.createTextNode(s + "\n");
+    span.setAttribute("class", className);
+    span.appendChild(text);
+    code.appendChild(span);
+    if (following) {
+      scrollToBottom();
     }
-    function scrollToBottom() {
-      window.scrollTo(0, document.body.scrollHeight);
+  }
+  function scrollToBottom() {
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  window.console = {
+    clear,
+    follow,
+    log: function(...args) {
+      print("debug", ...args);
+      originalConsole.log(...args);
+    },
+    info: function(...args) {
+      print("info", ...args);
+      originalConsole.info(...args);
+    },
+    warn: function(...args) {
+      print("warn", ...args);
+      originalConsole.warn(...args);
+    },
+    error: function(...args) {
+      print("error", ...args);
+      originalConsole.error(...args);
     }
-    return window.console;
-  }();
+  };
+  return window.console;
 }
 
 // src/_codi.js
-var version = "v1.0.14";
+var version = "v1.0.15";
 var codi = {
   describe,
   it,

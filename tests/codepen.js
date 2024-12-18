@@ -1,5 +1,5 @@
 // Import and run tests
-import * as codi from 'https://esm.sh/codi-test-framework@1.0.14';
+import * as codi from 'https://esm.sh/codi-test-framework@1.0.15';
 
 codi.codepenLogging();
 
