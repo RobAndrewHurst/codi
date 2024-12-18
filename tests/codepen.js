@@ -1,5 +1,7 @@
 // Import and run tests
-import * as codi from 'https://esm.sh/codi-test-framework@1.0.13';
+import * as codi from 'https://esm.sh/codi-test-framework@1.0.14';
+
+codi.codepenLogging();
 
 // Main test execution
 await codi.runWebTestFunction(async () => {
