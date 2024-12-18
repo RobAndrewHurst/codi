@@ -8,7 +8,9 @@ import {
     runWebTestFunction
 } from './runners/webRunner.js';
 
-const version = 'v1.0.11';
+import { codepenLogging } from "./codepen/logging.js";
+
+const version = 'v1.0.14';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -24,7 +26,8 @@ const codi = {
     assertFalse: assertions.assertFalse,
     assertThrows: assertions.assertThrows,
     assertNoDuplicates: assertions.assertNoDuplicates,
-    version
+    version,
+    codepenLogging
 };
 
 // Assign codi to globalThis

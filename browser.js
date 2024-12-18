@@ -267,7 +267,7 @@ async function describe(params, callback) {
 async function it(params, callback) {
   const suite = state.getSuite(params.parentId);
   if (!suite) {
-    throw new Error("A test needs to belong to a suite");
+    throw new Error(`test: ${params.name} needs to belong to a suite`);
   }
   const test = {
     name: params.name,
