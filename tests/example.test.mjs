@@ -54,7 +54,7 @@ await codi.describe(params, () => {
 
   codi.it({ name: "should check for duplicates", parentId: "group_1" }, () => {
     const array = ["field1", "field2"];
-    assertNoDuplicates(array, "There should be no duplicates");
+    codi.assertNoDuplicates(array, "There should be no duplicates");
   });
 });
 
