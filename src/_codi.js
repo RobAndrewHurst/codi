@@ -12,7 +12,7 @@ import { runTestFunction } from "./testRunner.js";
 
 import { codepenLogging } from "./codepen/logging.js";
 
-const version = "v1.0.20";
+const version = "v1.0.21";
 
 // Create the codi object to hold all exports
 const codi = {

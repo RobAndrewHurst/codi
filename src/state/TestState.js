@@ -173,10 +173,9 @@ const printSuite = (suite, indent, options) => {
     results = results.filter((result) => result.status === "failed");
   }
 
-  // In TestState.js
   function hasFailingTests(suite) {
     // Base case: check current suite's tests
-    if (suite.tests?.iterable?.some((test) => test.status === "failed")) {
+    if (suite.tests?.some((test) => test.status === "failed")) {
       return true;
     }
 
@@ -194,7 +193,7 @@ const printSuite = (suite, indent, options) => {
   }
 
   // Print suite name
-  if (suite.children.length > 0 || results.length > 0 || hasFailingChildren) {
+  if ((suite.children.length > 0 && hasFailingChildren) || results.length > 0) {
     console.log("\n" + indentation + chalk.yellow(chalk.bold(suite.name)));
   }
 
