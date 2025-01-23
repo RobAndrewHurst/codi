@@ -8,15 +8,18 @@ import {
   runWebTestFunction,
 } from "./runners/webRunner.js";
 
+import { runTestFunction } from "./testRunner.js";
+
 import { codepenLogging } from "./codepen/logging.js";
 
-const version = "v1.0.18";
+const version = "v1.0.19";
 
 // Create the codi object to hold all exports
 const codi = {
   describe,
   it,
   state,
+  runTestFunction,
   runWebTests,
   runWebTestFile,
   runWebTestFunction,
