@@ -10,33 +10,33 @@ import { state } from '../state/TestState.js';
  * @throws {Error} If called outside a describe block
  */
 export async function it(params, callback) {
-    const suite = state.getSuite(params.parentId);
+  const suite = state.getSuite(params.parentId);
 
-    if (!suite) {
-        throw new Error(`test: ${params.name} needs to belong to a suite`);
+  if (!suite) {
+    throw new Error(`test: ${params.name} needs to belong to a suite`);
+  }
+
+  const test = {
+    name: params.name,
+    startTime: performance.now(),
+  };
+
+  const testPromise = (async () => {
+    try {
+      await Promise.resolve(callback());
+      test.status = 'passed';
+      test.duration = performance.now() - test.startTime;
+      state.passedTests++;
+    } catch (error) {
+      test.status = 'failed';
+      test.error = error;
+      test.duration = performance.now() - test.startTime;
+      state.failedTests++;
+    } finally {
+      state.addTestToSuite(suite, test);
     }
+  })();
 
-    const test = {
-        name: params.name,
-        startTime: performance.now()
-    };
-
-    const testPromise = (async () => {
-        try {
-            await Promise.resolve(callback());
-            test.status = 'passed';
-            test.duration = performance.now() - test.startTime;
-            state.passedTests++;
-        } catch (error) {
-            test.status = 'failed';
-            test.error = error;
-            test.duration = performance.now() - test.startTime;
-            state.failedTests++;
-        } finally {
-            state.addTestToSuite(suite, test);
-        }
-    })();
-
-    state.testTracker.addTest(testPromise);
-    return testPromise;
+  state.testTracker.addTest(testPromise);
+  return testPromise;
 }

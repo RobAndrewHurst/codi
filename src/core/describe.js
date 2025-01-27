@@ -10,27 +10,26 @@ import { state } from '../state/TestState.js';
  * @returns {Promise<void>}
  */
 export async function describe(params, callback) {
+  const suite = {
+    name: params.name,
+    id: params.id,
+    parentId: params.parentId,
+    startTime: performance.now(),
+  };
 
-    const suite = {
-        name: params.name,
-        id: params.id,
-        parentId: params.parentId,
-        startTime: performance.now()
-    };
+  const nestedSuite = state.pushSuite(suite);
 
-    const nestedSuite = state.pushSuite(suite);
+  const suitePromise = (async () => {
+    try {
+      await Promise.resolve(callback(suite));
+    } catch (error) {
+      console.error(chalk.red(`Suite failed: ${nestedSuite.fullPath}`));
+      console.error(chalk.red(error.stack));
+    } finally {
+      nestedSuite.duration = performance.now() - nestedSuite.startTime;
+    }
+  })();
 
-    const suitePromise = (async () => {
-        try {
-            await Promise.resolve(callback(suite));
-        } catch (error) {
-            console.error(chalk.red(`Suite failed: ${nestedSuite.fullPath}`));
-            console.error(chalk.red(error.stack));
-        } finally {
-            nestedSuite.duration = performance.now() - nestedSuite.startTime;
-        }
-    })();
-
-    state.testTracker.addTest(suitePromise);
-    return suitePromise;
+  state.testTracker.addTest(suitePromise);
+  return suitePromise;
 }

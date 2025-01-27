@@ -1,18 +1,20 @@
-import assertions from "./assertions/_assertions.js";
-import { describe } from "./core/describe.js";
-import { it } from "./core/it.js";
-import { state } from "./state/TestState.js";
+import assertions from './assertions/_assertions.js';
+import { describe } from './core/describe.js';
+import { it } from './core/it.js';
+import { state } from './state/TestState.js';
 import {
   runWebTests,
   runWebTestFile,
   runWebTestFunction,
-} from "./runners/webRunner.js";
+} from './runners/webRunner.js';
 
-import { runTestFunction } from "./testRunner.js";
+import { runTestFunction } from './testRunner.js';
 
-import { codepenLogging } from "./codepen/logging.js";
+import { codepenLogging } from './codepen/logging.js';
 
-const version = "v1.0.21";
+import { MockHttp } from './util/mockHtml.js';
+
+const version = 'v1.0.21';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -31,6 +33,7 @@ const codi = {
   assertNoDuplicates: assertions.assertNoDuplicates,
   version,
   codepenLogging,
+  MockHttp,
 };
 
 // Assign codi to globalThis

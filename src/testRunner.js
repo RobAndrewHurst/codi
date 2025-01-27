@@ -4,10 +4,7 @@ import path from 'path';
 // Import runTests directly to use in runCLI
 import { runTests as nodeRunTests } from './runners/nodeRunner.js';
 // Runner exports - re-export everything
-export {
-  runTests,
-  runTestFunction
-} from './runners/nodeRunner.js';
+export { runTests, runTestFunction } from './runners/nodeRunner.js';
 
 import { version } from './_codi.js';
 
@@ -24,9 +21,10 @@ export async function runCodi() {
 
   let codiConfig = {};
 
-  const configPath = configPathIndex !== -1
-    ? process.argv[configPathIndex + 1]
-    : path.join(process.cwd(), 'codi.json');
+  const configPath =
+    configPathIndex !== -1
+      ? process.argv[configPathIndex + 1]
+      : path.join(process.cwd(), 'codi.json');
 
   if (returnVersion) {
     console.log(chalk.blue(`🐶 Woof! Woof!: ${chalk.green(version)}`));
@@ -46,7 +44,11 @@ export async function runCodi() {
       throw err;
     }
     if (!quiet) {
-      console.log(chalk.yellow(`No config file found at ${configPath}, proceeding with default settings`));
+      console.log(
+        chalk.yellow(
+          `No config file found at ${configPath}, proceeding with default settings`,
+        ),
+      );
     }
   }
 

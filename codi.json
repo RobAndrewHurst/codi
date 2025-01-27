@@ -1,6 +1,3 @@
 {
-    "excludeDirectories": [
-        "test",
-        "avoidme"
-    ]
+  "excludeDirectories": ["test", "avoidme"]
 }

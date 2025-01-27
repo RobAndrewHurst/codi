@@ -10,23 +10,20 @@ import chalk from 'chalk';
  * @returns {Promise<void>}
  */
 export async function runWebTestFile(testFile, options) {
+  const defaults = {
+    silent: false,
+  };
 
-    const defaults = {
-        silent: false
-    };
+  options ??= defaults;
 
-    options ??= defaults;
-
-    try {
-
-        const testPromise = import(testFile);
-        await Promise.resolve(testPromise);
-
-    } catch (error) {
-        console.error(`Error running test file ${testFile}:`);
-        console.error(error.stack);
-        state.failedTests++;
-    }
+  try {
+    const testPromise = import(testFile);
+    await Promise.resolve(testPromise);
+  } catch (error) {
+    console.error(`Error running test file ${testFile}:`);
+    console.error(error.stack);
+    state.failedTests++;
+  }
 }
 
 /**
@@ -38,43 +35,44 @@ export async function runWebTestFile(testFile, options) {
  * @returns {Promise<object>} Test results
  */
 export async function runWebTests(testFiles, options) {
+  const defaults = {
+    quiet: false,
+    showSummary: true,
+  };
 
-    const defaults = {
-        quiet: false,
-        showSummary: true
+  options ??= defaults;
+
+  state.resetCounters();
+  state.startTimer();
+
+  if (!options.quiet) {
+    console.log(
+      chalk.bold.magenta(`\nRunning ${testFiles.length} web test file(s)`),
+    );
+  }
+
+  try {
+    for (const file of testFiles) {
+      await runWebTestFile(file, options);
     }
+  } catch (error) {
+    console.error(chalk.red('\nTest execution failed:'));
+    console.error(chalk.red(error.stack));
+  }
 
-    options ??= defaults;
+  const summary = {
+    totalTests: state.passedTests + state.failedTests,
+    passedTests: state.passedTests,
+    failedTests: state.failedTests,
+    executionTime: state.getExecutionTime(),
+    suiteStack: state.suiteStack,
+  };
 
-    state.resetCounters();
-    state.startTimer();
+  if (options.showSummary) {
+    state.printSummary();
+  }
 
-    if (!options.quiet) {
-        console.log(chalk.bold.magenta(`\nRunning ${testFiles.length} web test file(s)`));
-    }
-
-    try {
-        for (const file of testFiles) {
-            await runWebTestFile(file, options);
-        }
-    } catch (error) {
-        console.error(chalk.red('\nTest execution failed:'));
-        console.error(chalk.red(error.stack));
-    }
-
-    const summary = {
-        totalTests: state.passedTests + state.failedTests,
-        passedTests: state.passedTests,
-        failedTests: state.failedTests,
-        executionTime: state.getExecutionTime(),
-        suiteStack: state.suiteStack
-    };
-
-    if (options.showSummary) {
-        state.printSummary();
-    }
-
-    return summary;
+  return summary;
 }
 
 /**
@@ -85,30 +83,29 @@ export async function runWebTests(testFiles, options) {
  * @returns {Promise<object>} Test results
  */
 export async function runWebTestFunction(testFn, options) {
+  options ??= {
+    quiet: false,
+    showSummary: true,
+  };
 
-    options ??= {
-        quiet: false,
-        showSummary: true
-    };
+  state.setOptions(options);
 
-    state.setOptions(options);
+  try {
+    await Promise.resolve(testFn());
+    // Wait for all pending tests to complete
+    await state.testTracker.waitForAll();
+  } catch (error) {
+    console.error('Error in test suite:', error);
+    state.failedTests++;
+  }
 
-    try {
-        await Promise.resolve(testFn());
-        // Wait for all pending tests to complete
-        await state.testTracker.waitForAll();
-    } catch (error) {
-        console.error('Error in test suite:', error);
-        state.failedTests++;
-    }
+  if (options.showSummary) {
+    state.printSummary();
+  }
 
-    if (options.showSummary) {
-        state.printSummary();
-    }
-
-    return {
-        passedTests: state.passedTests,
-        failedTests: state.failedTests,
-        suiteStack: state.suiteStack
-    };
+  return {
+    passedTests: state.passedTests,
+    failedTests: state.failedTests,
+    suiteStack: state.suiteStack,
+  };
 }

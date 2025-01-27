@@ -12,17 +12,19 @@ import { excludePattern } from '../util/regex.js';
  * @returns {Promise<void>}
  */
 async function runTestFile(testFile) {
-    try {
-        const fileUrl = path.isAbsolute(testFile)
-            ? `file://${testFile}`
-            : `file://${path.resolve(testFile)}`;
+  try {
+    const fileUrl = path.isAbsolute(testFile)
+      ? `file://${testFile}`
+      : `file://${path.resolve(testFile)}`;
 
-        await import(fileUrl);
-    } catch (error) {
-        console.error(chalk.red(`\nError running test file ${chalk.underline(testFile)}:`));
-        console.error(chalk.red(error.stack));
-        state.failedTests++;
-    }
+    await import(fileUrl);
+  } catch (error) {
+    console.error(
+      chalk.red(`\nError running test file ${chalk.underline(testFile)}:`),
+    );
+    console.error(chalk.red(error.stack));
+    state.failedTests++;
+  }
 }
 
 /**
@@ -34,46 +36,56 @@ async function runTestFile(testFile) {
  * @param {object} [codiConfig={}] - Configuration object
  * @returns {Promise<object|void>} Test results if returnResults is true
  */
-export async function runTests(testDirectory, returnResults = false, codiConfig = {}, options = {}) {
-    state.resetCounters();
-    state.startTimer();
-    state.setOptions(options);
+export async function runTests(
+  testDirectory,
+  returnResults = false,
+  codiConfig = {},
+  options = {},
+) {
+  state.resetCounters();
+  state.startTimer();
+  state.setOptions(options);
 
-    let testFiles = fs.readdirSync(testDirectory, { recursive: true })
-        .filter(file => file.endsWith('.mjs'));
+  let testFiles = fs
+    .readdirSync(testDirectory, { recursive: true })
+    .filter((file) => file.endsWith('.mjs'));
 
-    if (codiConfig.excludeDirectories) {
-        const matcher = excludePattern(codiConfig.excludeDirectories);
-        testFiles = testFiles.filter(file => !matcher(file));
-    }
+  if (codiConfig.excludeDirectories) {
+    const matcher = excludePattern(codiConfig.excludeDirectories);
+    testFiles = testFiles.filter((file) => !matcher(file));
+  }
 
-    if (!options.quiet) {
-        console.log(chalk.bold.magenta(`\nRunning tests in directory: ${chalk.underline(testDirectory)}`));
-        console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
-    }
+  if (!options.quiet) {
+    console.log(
+      chalk.bold.magenta(
+        `\nRunning tests in directory: ${chalk.underline(testDirectory)}`,
+      ),
+    );
+    console.log(chalk.bold.magenta(`Found ${testFiles.length} test file(s)\n`));
+  }
 
-    for (const file of testFiles) {
-        await runTestFile(path.join(testDirectory, file));
-    }
+  for (const file of testFiles) {
+    await runTestFile(path.join(testDirectory, file));
+  }
 
-    state.printSummary();
+  state.printSummary();
 
-    if (returnResults) {
-        return {
-            passedTests: state.passedTests,
-            failedTests: state.failedTests,
-            suiteStack: state.suiteStack,
-            executionTime: state.getExecutionTime()
-        };
-    }
+  if (returnResults) {
+    return {
+      passedTests: state.passedTests,
+      failedTests: state.failedTests,
+      suiteStack: state.suiteStack,
+      executionTime: state.getExecutionTime(),
+    };
+  }
 
-    if (state.failedTests > 0) {
-        console.log(chalk.red(`\n${state.failedTests} tests failed.`));
-        process.exit(1);
-    } else {
-        console.log(chalk.green(`\n${state.passedTests} tests passed.`));
-        process.exit(0);
-    }
+  if (state.failedTests > 0) {
+    console.log(chalk.red(`\n${state.failedTests} tests failed.`));
+    process.exit(1);
+  } else {
+    console.log(chalk.green(`\n${state.passedTests} tests passed.`));
+    process.exit(0);
+  }
 }
 
 /**
@@ -84,17 +96,16 @@ export async function runTests(testDirectory, returnResults = false, codiConfig 
  * @returns {Promise<object>} Test results
  */
 export async function runTestFunction(testFn) {
+  try {
+    await Promise.resolve(testFn());
+  } catch (error) {
+    console.error(`Error in test ${testFn.name}:`, error);
+    state.failedTests++;
+  }
 
-    try {
-        await Promise.resolve(testFn());
-    } catch (error) {
-        console.error(`Error in test ${testFn.name}:`, error);
-        state.failedTests++;
-    }
-
-    return {
-        passedTests: state.passedTests,
-        failedTests: state.failedTests,
-        suiteStack: state.suiteStack
-    };
+  return {
+    passedTests: state.passedTests,
+    failedTests: state.failedTests,
+    suiteStack: state.suiteStack,
+  };
 }

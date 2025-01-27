@@ -1,75 +1,95 @@
 const params = {
-  name: "I am an Example Test Suite",
-  id: "group_1",
+  name: 'I am an Example Test Suite',
+  id: 'group_1',
 };
 
 await codi.describe(params, () => {
   const group_params = {
-    id: "group_2",
-    parentId: "group_1",
+    id: 'group_2',
+    parentId: 'group_1',
   };
 
-  codi.describe({ name: "I am a nested describe", ...group_params }, () => {
+  codi.describe({ name: 'I am a nested describe', ...group_params }, () => {
     codi.it(
-      { name: "should pass equality assertion", parentId: "group_2" },
+      { name: 'should pass equality assertion', parentId: 'group_2' },
       () => {
-        codi.assertEqual(1, 2, "Expected 1 to equal 1");
+        codi.assertEqual(1, 2, 'Expected 1 to equal 1');
       },
     );
 
     codi.it(
-      { name: "should pass inequality assertion", parentId: "group_2" },
+      { name: 'should pass inequality assertion', parentId: 'group_2' },
       () => {
-        codi.assertNotEqual(1, 2, "Expected 1 not to equal 2");
+        codi.assertNotEqual(1, 2, 'Expected 1 not to equal 2');
       },
     );
 
-    codi.it({ name: "should pass true assertion", parentId: "group_1" }, () => {
-      codi.assertTrue(true, "Expected true to be true");
+    codi.it({ name: 'should pass true assertion', parentId: 'group_1' }, () => {
+      codi.assertTrue(true, 'Expected true to be true');
     });
   });
 
-  codi.it({ name: "should pass false assertion", parentId: "group_2" }, () => {
-    codi.assertFalse(false, "Expected false to be false");
+  codi.it({ name: 'should pass false assertion', parentId: 'group_2' }, () => {
+    codi.assertFalse(false, 'Expected false to be false');
   });
 
-  codi.it({ name: "should pass error assertion", parentId: "group_1" }, () => {
+  codi.it({ name: 'should pass error assertion', parentId: 'group_1' }, () => {
     codi.assertThrows(
       () => {
-        throw new Error("An error occurred");
+        throw new Error('An error occurred');
       },
-      "An error occurred",
-      "Expected an error to be thrown",
+      'An error occurred',
+      'Expected an error to be thrown',
     );
   });
 
   codi.it(
-    { name: "should deeply compare objects", parentId: "group_1" },
+    { name: 'should deeply compare objects', parentId: 'group_1' },
     () => {
       const obj1 = { a: 1, b: { c: 2 } };
       const obj2 = { a: 1, b: { c: 2 } };
-      codi.assertEqual(obj1, obj2, "Expected objects to be deeply equal");
+      codi.assertEqual(obj1, obj2, 'Expected objects to be deeply equal');
     },
   );
 
-  codi.it({ name: "should check for duplicates", parentId: "group_1" }, () => {
-    const array = ["field1", "field2"];
-    codi.assertNoDuplicates(array, "There should be no duplicates");
+  codi.it({ name: 'should check for duplicates', parentId: 'group_1' }, () => {
+    const array = ['field1', 'field2'];
+    codi.assertNoDuplicates(array, 'There should be no duplicates');
   });
+});
+
+codi.describe({ name: 'HTTP Mock Test', id: 'http_test' }, () => {
+  codi.it(
+    { name: 'Should hangle get requests', parentId: 'http_test' },
+    async () => {
+      const http = new codi.MockHttp();
+
+      http.mock('http://localhost:3000/api/users', {
+        status: 200,
+        body: { users: ['user1', 'user2'] },
+      });
+
+      const response = await http.fetch('http://localhost:3000/api/users');
+      const data = await response.json();
+
+      codi.assertEqual(response.status, 200);
+      codi.assertEqual(data.users.length, 2);
+    },
+  );
 });
 
 await codi.runTestFunction(testFunction);
 
 function testFunction() {
-  codi.describe({ name: "First Layer", id: "first_layer" }, () => {
-    codi.it({ name: "first", parentId: "first_layer" }, () => {
-      codi.assertEqual(1, 2, "Expected 1 to equal 1");
+  codi.describe({ name: 'First Layer', id: 'first_layer' }, () => {
+    codi.it({ name: 'first', parentId: 'first_layer' }, () => {
+      codi.assertEqual(1, 2, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "first", parentId: "first_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'first', parentId: 'first_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "first", parentId: "first_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'first', parentId: 'first_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
 
     secondFunction();
@@ -77,15 +97,15 @@ function testFunction() {
 }
 
 function secondFunction() {
-  codi.describe({ name: "second Layer", id: "second_layer" }, () => {
-    codi.it({ name: "Second", parentId: "second_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+  codi.describe({ name: 'second Layer', id: 'second_layer' }, () => {
+    codi.it({ name: 'Second', parentId: 'second_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "Second", parentId: "second_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'Second', parentId: 'second_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "Second", parentId: "second_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'Second', parentId: 'second_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
 
     thirdFunction();
@@ -93,15 +113,15 @@ function secondFunction() {
 }
 
 function thirdFunction() {
-  codi.describe({ name: "third Layer", id: "third_layer" }, () => {
-    codi.it({ name: "third", parentId: "third_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+  codi.describe({ name: 'third Layer', id: 'third_layer' }, () => {
+    codi.it({ name: 'third', parentId: 'third_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "third", parentId: "third_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'third', parentId: 'third_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-    codi.it({ name: "third", parentId: "third_layer" }, () => {
-      codi.assertEqual(1, 1, "Expected 1 to equal 1");
+    codi.it({ name: 'third', parentId: 'third_layer' }, () => {
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
   });
 }

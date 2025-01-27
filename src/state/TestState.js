@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from 'chalk';
 /**
  * Class representing the state of test execution
  * @class TestState
@@ -44,7 +44,7 @@ class TestState {
    * @param {object} suite - Test suite to add
    */
   pushSuite(suite) {
-    let parentSuite = "";
+    let parentSuite = '';
     // Get parent suite if exists
     if (suite.parentId) {
       parentSuite = this.getSuite(suite.parentId);
@@ -143,7 +143,7 @@ class TestState {
       printSuite(this.suiteStack[id], 0, this.options);
     });
 
-    console.log(chalk.bold.cyan("\nTest Summary:"));
+    console.log(chalk.bold.cyan('\nTest Summary:'));
     console.log(chalk.green(`  Passed: ${this.passedTests}`));
     console.log(chalk.red(`  Failed: ${this.failedTests}`));
     console.log(chalk.blue(`  Time: ${this.getExecutionTime()}s`));
@@ -164,18 +164,18 @@ class TestState {
 
 // Helper function to print suite and its children
 const printSuite = (suite, indent, options) => {
-  const indentation = "  ".repeat(indent);
+  const indentation = '  '.repeat(indent);
 
   // Print suite's tests
   let results = suite.tests;
   let hasFailingChildren = false;
   if (options.quiet) {
-    results = results.filter((result) => result.status === "failed");
+    results = results.filter((result) => result.status === 'failed');
   }
 
   function hasFailingTests(suite) {
     // Base case: check current suite's tests
-    if (suite.tests?.some((test) => test.status === "failed")) {
+    if (suite.tests?.some((test) => test.status === 'failed')) {
       return true;
     }
 
@@ -194,11 +194,11 @@ const printSuite = (suite, indent, options) => {
 
   // Print suite name
   if ((suite.children.length > 0 && hasFailingChildren) || results.length > 0) {
-    console.log("\n" + indentation + chalk.yellow(chalk.bold(suite.name)));
+    console.log('\n' + indentation + chalk.yellow(chalk.bold(suite.name)));
   }
 
   results.forEach((result) => {
-    if (result.status === "failed") {
+    if (result.status === 'failed') {
       console.log(
         indentation +
           chalk.red(`  └─ ⛔ ${result.name} (${result.duration.toFixed(2)}ms)`),
