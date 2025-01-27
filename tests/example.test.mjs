@@ -60,7 +60,7 @@ await codi.describe(params, () => {
 
 codi.describe({ name: 'HTTP Mock Test', id: 'http_test' }, () => {
   codi.it(
-    { name: 'Should hangle get requests', parentId: 'http_test' },
+    { name: 'Should handle get requests', parentId: 'http_test' },
     async () => {
       const http = new codi.MockHttp();
 
@@ -74,6 +74,64 @@ codi.describe({ name: 'HTTP Mock Test', id: 'http_test' }, () => {
 
       codi.assertEqual(response.status, 200);
       codi.assertEqual(data.users.length, 2);
+    },
+  );
+});
+
+codi.describe(
+  { name: 'HTTP Mock Test fun syntax', id: 'http_test_fun' },
+  () => {
+    codi.it(
+      { name: 'We should get lucy to speak', parentId: 'http_test_fun' },
+      async () => {
+        const httpDog = new codi.MockHttp();
+
+        httpDog.train('http://localhost:3000/api/doggies', {
+          status: 200,
+          body: { users: ['Mieka', 'Codi'] },
+        });
+
+        const lucy = await httpDog.fetch('http://localhost:3000/api/doggies');
+        const data = await lucy.speak();
+
+        codi.assertEqual(lucy.status, 200);
+        codi.assertEqual(data.users.length, 2);
+      },
+    );
+  },
+);
+
+codi.describe({ name: 'Module Mock', id: 'module_mock' }, () => {
+  codi.it({ name: 'Mocking a module', parentId: 'module_mock' }, () => {
+    const registery = new codi.MockModuleRegistry();
+
+    registery.mock('./testModule', {
+      helloCodi: (name) => console.log(`boring mock ${name}`),
+    });
+
+    registery.require('./testModule').helloCodi('Robbie');
+
+    const mockedModule = registery.modules.get('./testModule');
+
+    codi.assertTrue(Object.hasOwn(mockedModule.implementation, 'helloCodi'));
+  });
+});
+
+codi.describe({ name: 'Module Mock fun', id: 'module_mock_fun' }, () => {
+  codi.it(
+    { name: 'Mocking a module with fun syntax', parentId: 'module_mock_fun' },
+    () => {
+      const mieka = new codi.MockModuleRegistry();
+
+      mieka.train('./testModule', {
+        helloCodi: (name) => console.log(`Woof Woof 🐶 ${name}`),
+      });
+
+      mieka.fetch('./testModule').helloCodi('Robbie');
+
+      const mockedModule = mieka.modules.get('./testModule');
+
+      codi.assertTrue(Object.hasOwn(mockedModule.implementation, 'helloCodi'));
     },
   );
 });

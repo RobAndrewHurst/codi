@@ -14,6 +14,8 @@ import { codepenLogging } from './codepen/logging.js';
 
 import { MockHttp } from './util/mockHtml.js';
 
+import { MockModuleRegistry } from './util/mockModule.js';
+
 const version = 'v1.0.21';
 
 // Create the codi object to hold all exports
@@ -34,6 +36,7 @@ const codi = {
   version,
   codepenLogging,
   MockHttp,
+  MockModuleRegistry,
 };
 
 // Assign codi to globalThis
