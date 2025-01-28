@@ -1,3 +1,5 @@
+import { codi } from '../src/_codi';
+
 const params = {
   name: 'I am an Example Test Suite',
   id: 'group_1',
@@ -103,37 +105,19 @@ codi.describe(
 
 codi.describe({ name: 'Module Mock', id: 'module_mock' }, () => {
   codi.it({ name: 'Mocking a module', parentId: 'module_mock' }, () => {
-    const registery = new codi.MockModuleRegistry();
-
-    registery.mock('./testModule', {
-      helloCodi: (name) => console.log(`boring mock ${name}`),
+    codi.mock.module('./testModule.js', () => {
+      return {
+        helloCodiMock: (name) => {
+          return `Hello ${name}`;
+        },
+      };
     });
 
-    registery.require('./testModule').helloCodi('Robbie');
+    const mockedModule = require('./testModule.js');
 
-    const mockedModule = registery.modules.get('./testModule');
-
-    codi.assertTrue(Object.hasOwn(mockedModule.implementation, 'helloCodi'));
+    codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
+    codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
   });
-});
-
-codi.describe({ name: 'Module Mock fun', id: 'module_mock_fun' }, () => {
-  codi.it(
-    { name: 'Mocking a module with fun syntax', parentId: 'module_mock_fun' },
-    () => {
-      const mieka = new codi.MockModuleRegistry();
-
-      mieka.train('./testModule', {
-        helloCodi: (name) => console.log(`Woof Woof 🐶 ${name}`),
-      });
-
-      mieka.fetch('./testModule').helloCodi('Robbie');
-
-      const mockedModule = mieka.modules.get('./testModule');
-
-      codi.assertTrue(Object.hasOwn(mockedModule.implementation, 'helloCodi'));
-    },
-  );
 });
 
 await codi.runTestFunction(testFunction);

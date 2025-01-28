@@ -14,7 +14,25 @@ import { codepenLogging } from './codepen/logging.js';
 
 import { MockHttp } from './util/mockHtml.js';
 
-import { MockModuleRegistry } from './util/mockModule.js';
+let mockModule;
+
+const browserMock = {
+  module: (path, implementation) => {
+    console.warn('Mocking not supported in browser environment');
+    return implementation;
+  },
+};
+
+try {
+  if (typeof Bun !== 'undefined') {
+    const { mock } = await import('bun:test');
+    mockModule = mock;
+  } else {
+    mockModule = browserMock;
+  }
+} catch {
+  mockFunction = browserMock;
+}
 
 const version = 'v1.0.22';
 
@@ -36,7 +54,7 @@ const codi = {
   version,
   codepenLogging,
   MockHttp,
-  MockModuleRegistry,
+  mock: mockModule,
 };
 
 // Assign codi to globalThis
@@ -64,4 +82,4 @@ export const {
 } = assertions;
 
 // Export the entire codi object as default
-export default codi;
+export { codi };
