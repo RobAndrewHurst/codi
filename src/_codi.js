@@ -34,7 +34,7 @@ try {
   mockFunction = browserMock;
 }
 
-const version = 'v1.0.22';
+const version = 'v1.0.23';
 
 // Create the codi object to hold all exports
 const codi = {

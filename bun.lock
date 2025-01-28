@@ -5,7 +5,6 @@
       "name": "codi-test-framework",
       "dependencies": {
         "chalk": "^5.3.0",
-        "codi-test-framework": "^1.0.18",
         "figlet": "^1.7.0",
       },
       "devDependencies": {
@@ -27,8 +26,6 @@
     "bun-types": ["bun-types@1.2.1", "", { "dependencies": { "@types/node": "*", "@types/ws": "~8.5.10" } }, "sha512-p7bmXUWmrPWxhcbFVk7oUXM5jAGt94URaoa3qf4mz43MEhNAo/ot1urzBqctgvuq7y9YxkuN51u+/qm4BiIsHw=="],
 
     "chalk": ["chalk@5.3.0", "", {}, "sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w=="],
-
-    "codi-test-framework": ["codi-test-framework@1.0.18", "", { "dependencies": { "chalk": "^5.3.0", "figlet": "^1.7.0" }, "bin": { "codi": "cli.js" } }, "sha512-z65bEoNLJLhc5mHjwtCFlYgc0Ks6/rDXcI5TZ6EcHM/7SdKjsb9eDo45zT3TyKlreR8QwSvBWZ0XK+33qSez3w=="],
 
     "figlet": ["figlet@1.7.0", "", { "bin": "bin/index.js" }, "sha512-gO8l3wvqo0V7wEFLXPbkX83b7MVjRrk1oRLfYlZXol8nEpb/ON9pcKLI4qpBv5YtOTfrINtqb7b40iYY2FTWFg=="],
 
