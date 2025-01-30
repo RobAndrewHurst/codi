@@ -12,7 +12,7 @@ import { runTestFunction } from './testRunner.js';
 
 import { codepenLogging } from './codepen/logging.js';
 
-import { MockHttp } from './util/mockHtml.js';
+import mockHttp from 'node-mocks-http';
 
 let mockModule;
 
@@ -53,7 +53,7 @@ const codi = {
   assertNoDuplicates: assertions.assertNoDuplicates,
   version,
   codepenLogging,
-  MockHttp,
+  mockHttp,
   mock: mockModule,
 };
 

@@ -60,44 +60,27 @@ await codi.describe(params, () => {
   });
 });
 
-codi.describe({ name: 'HTTP Mock Test', id: 'http_test' }, () => {
-  codi.it(
-    { name: 'Should handle get requests', parentId: 'http_test' },
-    async () => {
-      const http = new codi.MockHttp();
-
-      http.mock('http://localhost:3000/api/users', {
-        status: 200,
-        body: { users: ['user1', 'user2'] },
-      });
-
-      const response = await http.fetch('http://localhost:3000/api/users');
-      const data = await response.json();
-
-      codi.assertEqual(response.status, 200);
-      codi.assertEqual(data.users.length, 2);
-    },
-  );
-});
-
 codi.describe(
   { name: 'HTTP Mock Test fun syntax', id: 'http_test_fun' },
   () => {
     codi.it(
-      { name: 'We should get lucy to speak', parentId: 'http_test_fun' },
+      { name: 'We should get some doggies', parentId: 'http_test_fun' },
       async () => {
-        const httpDog = new codi.MockHttp();
-
-        httpDog.train('http://localhost:3000/api/doggies', {
-          status: 200,
-          body: { users: ['Mieka', 'Codi'] },
+        const { req, res } = codi.mockHttp.createMocks({
+          url: 'http://localhost:3000/api/doggies',
         });
 
-        const lucy = await httpDog.fetch('http://localhost:3000/api/doggies');
-        const data = await lucy.speak();
+        function getDogs(req, res) {
+          const doggies = ['Mieka', 'Codi', 'Luci'];
+          res.send(doggies);
+        }
 
-        codi.assertEqual(lucy.status, 200);
-        codi.assertEqual(data.users.length, 2);
+        getDogs(req, res);
+
+        const data = res._getData();
+
+        codi.assertEqual(res.statusCode, 200);
+        codi.assertEqual(data.length, 3);
       },
     );
   },
