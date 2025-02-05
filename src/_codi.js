@@ -12,6 +12,7 @@ import { runTestFunction } from './testRunner.js';
 
 import { codepenLogging } from './codepen/logging.js';
 
+import { mock as mockFetch } from 'bun-bagel';
 import mockHttp from 'node-mocks-http';
 
 let mockModule;
@@ -34,7 +35,7 @@ try {
   mockFunction = browserMock;
 }
 
-const version = 'v1.0.24';
+const version = 'v1.0.25';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -54,6 +55,7 @@ const codi = {
   version,
   codepenLogging,
   mockHttp,
+  mockFetch,
   mock: mockModule,
 };
 

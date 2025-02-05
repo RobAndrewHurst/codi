@@ -20,13 +20,14 @@
   "author": "Rob Hurst",
   "license": "MIT",
   "dependencies": {
+    "bun-bagel": "^1.1.0",
     "chalk": "^5.3.0",
     "figlet": "^1.7.0",
     "node-mocks-http": "^1.16.2"
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prettier": "^3.4.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

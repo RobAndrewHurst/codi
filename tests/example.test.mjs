@@ -60,31 +60,24 @@ await codi.describe(params, () => {
   });
 });
 
-codi.describe(
-  { name: 'HTTP Mock Test fun syntax', id: 'http_test_fun' },
-  () => {
-    codi.it(
-      { name: 'We should get some doggies', parentId: 'http_test_fun' },
-      async () => {
-        const { req, res } = codi.mockHttp.createMocks({
-          url: 'http://localhost:3000/api/doggies',
-        });
+await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
+  await codi.it(
+    { name: 'We should get some doggies', parentId: 'http_test_fun' },
+    async () => {
+      codi.mockFetch('https://codi.io', {
+        data: ['codi', 'mieka', 'luci'],
+        response: {
+          status: 404,
+        },
+      });
 
-        function getDogs(req, res) {
-          const doggies = ['Mieka', 'Codi', 'Luci'];
-          res.send(doggies);
-        }
+      const response = await fetch('https://codi.io');
 
-        getDogs(req, res);
-
-        const data = res._getData();
-
-        codi.assertEqual(res.statusCode, 200);
-        codi.assertEqual(data.length, 3);
-      },
-    );
-  },
-);
+      codi.assertEqual(response.status, 404, 'We expect to get a 404');
+      codi.assertEqual(await response.json(), ['codi', 'mieka', 'luci']);
+    },
+  );
+});
 
 codi.describe({ name: 'Module Mock', id: 'module_mock' }, () => {
   codi.it({ name: 'Mocking a module', parentId: 'module_mock' }, () => {
