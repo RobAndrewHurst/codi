@@ -14,27 +14,9 @@ import { codepenLogging } from './codepen/logging.js';
 
 import { mock as mockFetch } from 'bun-bagel';
 import mockHttp from 'node-mocks-http';
+import { mock, spyOn } from 'bun:test';
 
-let jest, spyOn;
-
-const browserMock = {
-  module: (path, implementation) => {
-    console.warn('Mocking not supported in browser environment');
-    return implementation;
-  },
-};
-
-try {
-  if (typeof Bun !== 'undefined') {
-    ({ jest, spyOn } = await import('bun:test'));
-  } else {
-    mock = browserMock;
-  }
-} catch {
-  mock = browserMock;
-}
-
-const version = 'v1.0.28';
+const version = 'v1.0.29';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -55,7 +37,7 @@ const codi = {
   codepenLogging,
   mockHttp,
   mockFetch,
-  mock: jest,
+  mock,
   spyOn,
 };
 

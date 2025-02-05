@@ -79,21 +79,36 @@ await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
   );
 });
 
-codi.describe({ name: 'Module Mock', id: 'module_mock' }, () => {
-  codi.it({ name: 'Mocking a module', parentId: 'module_mock' }, () => {
-    codi.mock.module('./testModule.js', () => {
-      return {
-        helloCodiMock: (name) => {
-          return `Hello ${name}`;
-        },
-      };
-    });
+await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
+  await codi.it(
+    { name: 'Mocking a module', parentId: 'module_mock' },
+    async () => {
+      const originalModule = await import('./testModule.js');
 
-    const mockedModule = require('./testModule.js');
+      codi.mock.module('./testModule.js', () => {
+        return {
+          helloCodiMock: (name) => {
+            return `Hello ${name}`;
+          },
+        };
+      });
 
-    codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
-    codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
-  });
+      const mockedModule = require('./testModule.js');
+
+      codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
+      codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
+
+      codi.mock.module('./testModule.js', () => {
+        return { ...originalModule };
+      });
+
+      const anotherImport = require('./testModule.js');
+
+      console.log(anotherImport);
+
+      codi.assertEqual(anotherImport.name, 'helloCodi');
+    },
+  );
 });
 
 await codi.runTestFunction(testFunction);
