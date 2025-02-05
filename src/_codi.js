@@ -26,9 +26,7 @@ const browserMock = {
 
 try {
   if (typeof Bun !== 'undefined') {
-    const { mock, spyOn } = await import('bun:test');
-    mock = mock;
-    spyOn = spyOn;
+    ({ mock, spyOn } = await import('bun:test'));
   } else {
     mock = browserMock;
   }
@@ -36,7 +34,7 @@ try {
   mock = browserMock;
 }
 
-const version = 'v1.0.26';
+const version = 'v1.0.27';
 
 // Create the codi object to hold all exports
 const codi = {
