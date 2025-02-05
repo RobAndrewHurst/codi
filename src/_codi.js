@@ -15,7 +15,7 @@ import { codepenLogging } from './codepen/logging.js';
 import { mock as mockFetch } from 'bun-bagel';
 import mockHttp from 'node-mocks-http';
 
-let mockModule;
+let mock, spyOn;
 
 const browserMock = {
   module: (path, implementation) => {
@@ -26,16 +26,17 @@ const browserMock = {
 
 try {
   if (typeof Bun !== 'undefined') {
-    const { mock } = await import('bun:test');
-    mockModule = mock;
+    const { mock, spyOn } = await import('bun:test');
+    mock = mock;
+    spyOn = spyOn;
   } else {
-    mockModule = browserMock;
+    mock = browserMock;
   }
 } catch {
-  mockFunction = browserMock;
+  mock = browserMock;
 }
 
-const version = 'v1.0.25';
+const version = 'v1.0.26';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -56,7 +57,8 @@ const codi = {
   codepenLogging,
   mockHttp,
   mockFetch,
-  mock: mockModule,
+  mock,
+  spyOn,
 };
 
 // Assign codi to globalThis
