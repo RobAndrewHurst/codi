@@ -12,11 +12,16 @@ import { runTestFunction } from './testRunner.js';
 
 import { codepenLogging } from './codepen/logging.js';
 
-import { mock as mockFetch } from 'bun-bagel';
-import mockHttp from 'node-mocks-http';
-import { mock, spyOn } from 'bun:test';
+import { mock } from 'node:test';
 
-const version = 'v1.0.29';
+import { MockAgent, setGlobalDispatcher } from 'undici';
+
+const mockHttp = {
+  MockAgent,
+  setGlobalDispatcher,
+};
+
+const version = 'v1.0.30';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -36,9 +41,7 @@ const codi = {
   version,
   codepenLogging,
   mockHttp,
-  mockFetch,
   mock,
-  spyOn,
 };
 
 // Assign codi to globalThis

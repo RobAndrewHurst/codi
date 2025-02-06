@@ -1,3 +1,3 @@
-module.exports = function helloCodi(name) {
-  console.log(`woof woof: ${name}`);
-};
+export function helloCodi(name) {
+  return `woof woof: ${name}`;
+}

@@ -1,4 +1,6 @@
-import { codi } from '../src/_codi';
+import { codi } from '../src/_codi.js';
+import { mock } from 'node:test';
+import { helloCodi } from './testModule.js';
 
 const params = {
   name: 'I am an Example Test Suite',
@@ -64,14 +66,13 @@ await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
   await codi.it(
     { name: 'We should get some doggies', parentId: 'http_test_fun' },
     async () => {
-      codi.mockFetch('https://codi.io', {
-        data: ['codi', 'mieka', 'luci'],
-        response: {
-          status: 404,
-        },
-      });
+      const mockAgent = new codi.mockHttp.MockAgent();
+      codi.mockHttp.setGlobalDispatcher(mockAgent);
 
-      const response = await fetch('https://codi.io');
+      const mockPool = mockAgent.get(new RegExp('http://localhost:3000'));
+      mockPool.intercept({ path: '/' }).reply(404, ['codi', 'mieka', 'luci']);
+
+      const response = await fetch('http://localhost:3000');
 
       codi.assertEqual(response.status, 404, 'We expect to get a 404');
       codi.assertEqual(await response.json(), ['codi', 'mieka', 'luci']);
@@ -83,30 +84,26 @@ await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
   await codi.it(
     { name: 'Mocking a module', parentId: 'module_mock' },
     async () => {
-      const originalModule = await import('./testModule.js');
-
-      codi.mock.module('./testModule.js', () => {
-        return {
-          helloCodiMock: (name) => {
+      const mock = codi.mock.module('./testModule.js', {
+        namedExports: {
+          helloCodiMock(name) {
             return `Hello ${name}`;
           },
-        };
+        },
       });
 
-      const mockedModule = require('./testModule.js');
+      let mockedModule;
+
+      mockedModule = await import('./testModule.js');
 
       codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
       codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
 
-      codi.mock.module('./testModule.js', () => {
-        return { ...originalModule };
-      });
+      mock.restore();
 
-      const anotherImport = require('./testModule.js');
+      mockedModule = await import('./testModule.js');
 
-      console.log(anotherImport);
-
-      codi.assertEqual(anotherImport.name, 'helloCodi');
+      codi.assertEqual(mockedModule.helloCodi('luci'), 'woof woof: luci');
     },
   );
 });
@@ -124,7 +121,6 @@ function testFunction() {
     codi.it({ name: 'first', parentId: 'first_layer' }, () => {
       codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
-
     secondFunction();
   });
 }
