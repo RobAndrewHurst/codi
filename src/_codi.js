@@ -16,12 +16,17 @@ import { mock } from 'node:test';
 
 import { MockAgent, setGlobalDispatcher } from 'undici';
 
+import { httpMocks } from 'node-mocks-http';
+
 const mockHttp = {
   MockAgent,
   setGlobalDispatcher,
+  createRequest: httpMocks.createRequest,
+  createResponse: httpMocks.createResponse,
+  createMocks: httpMocks.createMocks,
 };
 
-const version = 'v1.0.30';
+const version = 'v1.0.31';
 
 // Create the codi object to hold all exports
 const codi = {
