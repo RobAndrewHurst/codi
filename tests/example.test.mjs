@@ -1,6 +1,12 @@
 import { codi } from '../src/_codi.js';
-import { mock } from 'node:test';
-import { helloCodi } from './testModule.js';
+
+const luciMock = codi.mock.module('./luciModule.js', {
+  namedExports: {
+    helloLuci() {
+      return 'Mock luci';
+    },
+  },
+});
 
 const params = {
   name: 'I am an Example Test Suite',
@@ -107,6 +113,22 @@ await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
     },
   );
 });
+
+await codi.describe(
+  { name: 'Nested Module Mock', id: 'nested_ module_mock' },
+  async () => {
+    await codi.it(
+      { name: 'Mocking a nested module', parentId: 'nested_ module_mock' },
+      async () => {
+        const { helloCodi } = await import('./testModule.js');
+
+        const greeting = helloCodi('rob');
+
+        console.log(greeting);
+      },
+    );
+  },
+);
 
 await codi.runTestFunction(testFunction);
 
