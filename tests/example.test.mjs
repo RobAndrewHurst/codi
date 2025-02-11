@@ -87,17 +87,16 @@ await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
 });
 
 await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
+  const mock = codi.mock.module('./testModule.js', {
+    namedExports: {
+      helloCodiMock(name) {
+        return `Hello ${name}`;
+      },
+    },
+  });
   await codi.it(
     { name: 'Mocking a module', parentId: 'module_mock' },
     async () => {
-      const mock = codi.mock.module('./testModule.js', {
-        namedExports: {
-          helloCodiMock(name) {
-            return `Hello ${name}`;
-          },
-        },
-      });
-
       let mockedModule;
 
       mockedModule = await import('./testModule.js');

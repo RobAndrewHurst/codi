@@ -7,26 +7,34 @@ import {
   runWebTestFile,
   runWebTestFunction,
 } from './runners/webRunner.js';
-
 import { runTestFunction } from './testRunner.js';
-
 import { codepenLogging } from './codepen/logging.js';
 
-import { mock } from 'node:test';
+// Check if we're in a browser environment
+const isBrowser =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
-import { MockAgent, setGlobalDispatcher } from 'undici';
+// Initialize variables for Node.js specific imports
+let mockHttp = null;
+let mock = null;
 
-import httpMocks from 'node-mocks-http';
+// Only import Node.js specific modules if we're not in a browser
+if (!isBrowser) {
+  const { mock: nodeMock } = await import('node:test');
+  const { MockAgent, setGlobalDispatcher } = await import('undici');
+  const httpMocks = await import('node-mocks-http');
 
-const mockHttp = {
-  MockAgent,
-  setGlobalDispatcher,
-  createRequest: httpMocks.createRequest,
-  createResponse: httpMocks.createResponse,
-  createMocks: httpMocks.createMocks,
-};
+  mock = nodeMock;
+  mockHttp = {
+    MockAgent,
+    setGlobalDispatcher,
+    createRequest: httpMocks.createRequest,
+    createResponse: httpMocks.createResponse,
+    createMocks: httpMocks.createMocks,
+  };
+}
 
-const version = 'v1.0.32';
+const version = 'v1.0.33';
 
 // Create the codi object to hold all exports
 const codi = {
@@ -45,8 +53,9 @@ const codi = {
   assertNoDuplicates: assertions.assertNoDuplicates,
   version,
   codepenLogging,
-  mockHttp,
-  mock,
+  // Only add Node.js specific properties if they're available
+  ...(mockHttp && { mockHttp }),
+  ...(mock && { mock }),
 };
 
 // Assign codi to globalThis
