@@ -40,7 +40,7 @@ if (!isBrowser) {
   };
 }
 
-const version = 'v1.0.37';
+const version = 'v1.0.38';
 
 // Create the codi object to hold all exports
 const codi = {
