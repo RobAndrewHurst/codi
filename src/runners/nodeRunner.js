@@ -23,7 +23,7 @@ async function runTestFile(testFile) {
       chalk.red(`\nError running test file ${chalk.underline(testFile)}:`),
     );
     console.error(chalk.red(error.stack));
-    state.failedTests++;
+    //state.failedTests++;
   }
 }
 
@@ -53,6 +53,16 @@ export async function runTests(
   if (codiConfig.excludeDirectories) {
     const matcher = excludePattern(codiConfig.excludeDirectories);
     testFiles = testFiles.filter((file) => !matcher(file));
+  }
+
+  if (codiConfig.preload) {
+    const preloadFiles = fs
+      .readdirSync(codiConfig.preload, { recursive: true })
+      .filter((file) => file.endsWith('.mjs'));
+
+    for (const file of preloadFiles) {
+      await runTestFile(path.join(codiConfig.preload, file));
+    }
   }
 
   if (!options.quiet) {

@@ -1,3 +1,4 @@
 {
-  "excludeDirectories": ["test", "avoidme"]
+  "excludeDirectories": ["test", "avoidme"],
+  "preload": "__preload"
 }
