@@ -81,7 +81,7 @@ class TestState {
    * @returns {object|undefined} Found suite
    */
   getSuite(parentId) {
-    let suite = this.suiteStack[parentId];
+    const suite = this.suiteStack[parentId];
 
     if (suite) {
       return suite;
