@@ -19,7 +19,7 @@
   "scripts": {
     "test": "npm run tests",
     "tests": "node --experimental-test-module-mocks cli.js tests --returnResults",
-    "test:web": "bun --bun ./tests/webfunction.js",
+    "test:web": "node ./tests/webfunction.js",
     "test:browser": "node cli.js tests --browser",
     "test:all": "npm run tests && npm run test:browser",
     "build:browser": "node scripts/build-browser.js",
@@ -31,7 +31,7 @@
     "dev": "npm run build && npm run test:all",
     "prepublishOnly": "npm run build",
     "postbuild": "npm run test:browser",
-    "version": "bun --bun cli.js --version",
+    "version": "node cli.js --version",
     "clean": "rm -rf dist/*.js dist/*.map",
     "check": "npm run build && npm run test:all",
     "validate": "node scripts/validate-automation.js",
