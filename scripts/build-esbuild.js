@@ -47,7 +47,7 @@ const buildConfig = {
  * Version: v${version}
  * Generated: ${new Date().toISOString()}
  * Build tool: esbuild
- * 
+ *
  * @license MIT
  */`,
   },

@@ -44,6 +44,9 @@
   ],
   "author": "Rob Hurst",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "figlet": "^1.7.0",
