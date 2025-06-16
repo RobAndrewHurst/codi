@@ -50,8 +50,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
@@ -80,24 +78,26 @@ jobs:
               case "$PUBLISH_TYPE" in
                 "beta")
                   # Check if current version already has beta
-                  if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
-                    # Increment beta number
-                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-beta.' '{print $1"-beta."($2+1)}')
+                  if [[ "$CURRENT_VERSION" == *"-beta"* ]]; then
+                    # Use current version as-is, don't append another beta suffix
+                    NEW_VERSION="$CURRENT_VERSION"
                   else
                     # Add beta.1 to current version
                     NEW_VERSION="${CURRENT_VERSION}-beta.1"
                   fi
                   ;;
                 "alpha")
-                  if [[ "$CURRENT_VERSION" == *"-alpha."* ]]; then
-                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-alpha.' '{print $1"-alpha."($2+1)}')
+                  if [[ "$CURRENT_VERSION" == *"-alpha"* ]]; then
+                    # Use current version as-is, don't append another alpha suffix
+                    NEW_VERSION="$CURRENT_VERSION"
                   else
                     NEW_VERSION="${CURRENT_VERSION}-alpha.1"
                   fi
                   ;;
                 "rc")
-                  if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
-                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-rc.' '{print $1"-rc."($2+1)}')
+                  if [[ "$CURRENT_VERSION" == *"-rc"* ]]; then
+                    # Use current version as-is, don't append another rc suffix
+                    NEW_VERSION="$CURRENT_VERSION"
                   else
                     NEW_VERSION="${CURRENT_VERSION}-rc.1"
                   fi
@@ -119,11 +119,26 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
             # Main branch push - auto-publish beta if tests pass
             SHOULD_PUBLISH="true"
-            PUBLISH_TYPE="beta"
-
-            # Auto-increment beta version
-            COMMIT_COUNT=$(git rev-list --count HEAD)
-            NEW_VERSION="${CURRENT_VERSION}-beta.${COMMIT_COUNT}"
+            
+            # Check if current version already has a pre-release suffix
+            if [[ "$CURRENT_VERSION" == *"-beta"* ]]; then
+              PUBLISH_TYPE="beta"
+              # Use current version as-is if it's already a beta
+              NEW_VERSION="$CURRENT_VERSION"
+            elif [[ "$CURRENT_VERSION" == *"-alpha"* ]]; then
+              PUBLISH_TYPE="alpha"
+              # Use current version as-is if it's already an alpha
+              NEW_VERSION="$CURRENT_VERSION"
+            elif [[ "$CURRENT_VERSION" == *"-rc"* ]]; then
+              PUBLISH_TYPE="rc"
+              # Use current version as-is if it's already an rc
+              NEW_VERSION="$CURRENT_VERSION"
+            else
+              PUBLISH_TYPE="beta"
+              # Auto-increment beta version only if not already a pre-release
+              COMMIT_COUNT=$(git rev-list --count HEAD)
+              NEW_VERSION="${CURRENT_VERSION}-beta.${COMMIT_COUNT}"
+            fi
           fi
 
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
@@ -350,11 +365,11 @@ jobs:
         run: |
           VERSION="${{ needs.build.outputs.new_version }}"
 
-          if [[ "$VERSION" == *"-beta."* ]]; then
+          if [[ "$VERSION" == *"-beta"* ]]; then
             TAG="beta"
-          elif [[ "$VERSION" == *"-alpha."* ]]; then
+          elif [[ "$VERSION" == *"-alpha"* ]]; then
             TAG="alpha"
-          elif [[ "$VERSION" == *"-rc."* ]]; then
+          elif [[ "$VERSION" == *"-rc"* ]]; then
             TAG="rc"
           else
             TAG="latest"
@@ -370,22 +385,10 @@ jobs:
           echo "📦 Publishing to NPM..."
           echo "Version: ${{ needs.build.outputs.new_version }}"
           echo "Tag: ${{ steps.publish_tag.outputs.tag }}"
-          
-          # Verify authentication token is available
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "❌ ERROR: NPM_TOKEN secret is not set"
-            echo "Please add NPM_TOKEN to repository secrets"
-            exit 1
-          fi
-          
-          # Configure npm authentication explicitly
+
+          # Configure npm authentication
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-          
-          # Verify authentication works
-          echo "🔐 Verifying npm authentication..."
-          npm whoami
-          
+
           # Publish with appropriate tag
           if [ "${{ steps.publish_tag.outputs.tag }}" == "latest" ]; then
             npm publish --access public

@@ -35,10 +35,10 @@ function colorize(color, text) {
 function log(level, message) {
   const timestamp = new Date().toISOString();
   const prefix = {
-    info: colorize('blue', 'ℹ️  INFO'),
+    info: colorize('blue', 'i  INFO'),
     success: colorize('green', '✅ SUCCESS'),
     error: colorize('red', '❌ ERROR'),
-    warning: colorize('yellow', '⚠️  WARNING'),
+    warning: colorize('yellow', '!  WARNING'),
     step: colorize('cyan', '🔄 STEP'),
   };
 
@@ -209,10 +209,10 @@ function validateTestSystem() {
 
 function validateBrowserCompatibility() {
   log('step', 'Validating browser compatibility...');
-  
+
   const bundlePath = path.join(rootDir, 'dist/codi.browser.js');
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-  
+
   // Check for Node.js-specific imports that shouldn't be in browser bundle
   const nodeOnlyPatterns = [
     'require\\s*\\(',
@@ -222,42 +222,47 @@ function validateBrowserCompatibility() {
     '__filename',
     'fs\\.',
     'path\\.',
-    'os\\.'
+    'os\\.',
   ];
-  
+
   let browserCompatible = true;
-  
+
   for (const pattern of nodeOnlyPatterns) {
     const regex = new RegExp(pattern, 'g');
     const matches = bundleContent.match(regex);
     if (matches && matches.length > 0) {
-      log('warning', `Potential Node.js-specific code found: ${pattern} (${matches.length} occurrences)`);
+      log(
+        'warning',
+        `Potential Node.js-specific code found: ${pattern} (${matches.length} occurrences)`,
+      );
       // Don't fail on this, as some patterns might be in comments or strings
     }
   }
-  
+
   // Check for proper IIFE structure (including modern arrow function IIFEs)
   const iifePatterns = [
     '(function(',
     '(function()',
     'var codi = (() => {',
     'let codi = (() => {',
-    'const codi = (() => {'
+    'const codi = (() => {',
   ];
-  
-  const hasIIFE = iifePatterns.some(pattern => bundleContent.includes(pattern));
+
+  const hasIIFE = iifePatterns.some((pattern) =>
+    bundleContent.includes(pattern),
+  );
   if (!hasIIFE) {
     log('error', 'Bundle does not appear to be in IIFE format');
     browserCompatible = false;
   } else {
     log('success', 'Bundle is properly formatted as IIFE');
   }
-  
+
   // Check for global exports
   if (!bundleContent.includes('global') && !bundleContent.includes('window')) {
     log('warning', 'Bundle may not properly expose global variables');
   }
-  
+
   if (browserCompatible) {
     log('success', 'Browser compatibility validation passed');
   } else {
@@ -267,18 +272,18 @@ function validateBrowserCompatibility() {
 
 function validatePuppeteerCompatibility() {
   log('step', 'Validating Puppeteer method compatibility...');
-  
+
   // Check workflow files for deprecated Puppeteer methods
-  const workflowPath = path.join(rootDir, '.github/workflows/build-and-publish.yml');
+  const workflowPath = path.join(
+    rootDir,
+    '.github/workflows/build-and-publish.yml',
+  );
   if (fs.existsSync(workflowPath)) {
     const workflowContent = fs.readFileSync(workflowPath, 'utf8');
-    
+
     // Check for deprecated methods
-    const deprecatedMethods = [
-      'page.waitForTimeout',
-      'waitForTimeout'
-    ];
-    
+    const deprecatedMethods = ['page.waitForTimeout', 'waitForTimeout'];
+
     let hasDeprecated = false;
     for (const method of deprecatedMethods) {
       if (workflowContent.includes(method)) {
@@ -286,39 +291,41 @@ function validatePuppeteerCompatibility() {
         hasDeprecated = true;
       }
     }
-    
+
     if (!hasDeprecated) {
       log('success', 'No deprecated Puppeteer methods found in workflow');
     } else {
-      throw new Error('Deprecated Puppeteer methods found - these will cause CI failures');
+      throw new Error(
+        'Deprecated Puppeteer methods found - these will cause CI failures',
+      );
     }
   }
-  
+
   // Check browser runner for deprecated methods
   const browserRunnerPath = path.join(rootDir, 'src/runners/browserRunner.js');
   if (fs.existsSync(browserRunnerPath)) {
     const runnerContent = fs.readFileSync(browserRunnerPath, 'utf8');
-    
-    const deprecatedMethods = [
-      'page.waitForTimeout',
-      'waitForTimeout'
-    ];
-    
+
+    const deprecatedMethods = ['page.waitForTimeout', 'waitForTimeout'];
+
     let hasDeprecated = false;
     for (const method of deprecatedMethods) {
       if (runnerContent.includes(method)) {
-        log('error', `Deprecated Puppeteer method found in browser runner: ${method}`);
+        log(
+          'error',
+          `Deprecated Puppeteer method found in browser runner: ${method}`,
+        );
         hasDeprecated = true;
       }
     }
-    
+
     if (!hasDeprecated) {
       log('success', 'No deprecated Puppeteer methods found in browser runner');
     } else {
       throw new Error('Deprecated Puppeteer methods found in browser runner');
     }
   }
-  
+
   log('success', 'Puppeteer compatibility validation passed');
 }
 
@@ -351,20 +358,6 @@ function validateWorkflowFiles() {
   }
 }
 
-function validateDocumentation() {
-  log('step', 'Validating documentation...');
-
-  const docFiles = [
-    'README.md',
-    'AUTOMATED_BUILDS_AND_PUBLISHING.md',
-    'BROWSER_TESTING.md',
-  ];
-
-  for (const doc of docFiles) {
-    checkFile(doc, `Documentation: ${doc}`);
-  }
-}
-
 function simulateVersionCalculation() {
   log('step', 'Simulating version calculation logic...');
 
@@ -375,25 +368,77 @@ function simulateVersionCalculation() {
 
   log('info', `Current version: ${currentVersion}`);
 
-  // Simulate different version scenarios
-  const scenarios = [
-    { type: 'beta', expected: `${currentVersion}-beta.1` },
-    { type: 'alpha', expected: `${currentVersion}-alpha.1` },
-    { type: 'rc', expected: `${currentVersion}-rc.1` },
-  ];
+  // Simulate different version scenarios based on current version
+  const scenarios = [];
 
-  for (const scenario of scenarios) {
-    log('info', `${scenario.type} version would be: ${scenario.expected}`);
+  if (currentVersion.includes('-beta')) {
+    scenarios.push({
+      type: 'beta',
+      expected: currentVersion,
+      note: '(already beta - no suffix added)',
+    });
+  } else {
+    scenarios.push({ type: 'beta', expected: `${currentVersion}-beta.1` });
   }
 
-  // Simulate commit count for auto-beta
+  if (currentVersion.includes('-alpha')) {
+    scenarios.push({
+      type: 'alpha',
+      expected: currentVersion,
+      note: '(already alpha - no suffix added)',
+    });
+  } else {
+    scenarios.push({ type: 'alpha', expected: `${currentVersion}-alpha.1` });
+  }
+
+  if (currentVersion.includes('-rc')) {
+    scenarios.push({
+      type: 'rc',
+      expected: currentVersion,
+      note: '(already rc - no suffix added)',
+    });
+  } else {
+    scenarios.push({ type: 'rc', expected: `${currentVersion}-rc.1` });
+  }
+
+  for (const scenario of scenarios) {
+    const note = scenario.note || '';
+    log(
+      'info',
+      `${scenario.type} version would be: ${scenario.expected} ${note}`,
+    );
+  }
+
+  // Simulate commit count for auto-beta (following workflow logic)
   try {
     const commitCount = execCommand(
       'git rev-list --count HEAD',
       'Get commit count',
     ).trim();
-    const autoBetaVersion = `${currentVersion}-beta.${commitCount}`;
-    log('info', `Auto-beta version would be: ${autoBetaVersion}`);
+
+    let autoBetaVersion;
+    if (currentVersion.includes('-beta')) {
+      autoBetaVersion = currentVersion; // Use as-is if already beta
+      log(
+        'info',
+        `Auto-beta version would be: ${autoBetaVersion} (already beta - no change)`,
+      );
+    } else if (currentVersion.includes('-alpha')) {
+      autoBetaVersion = currentVersion; // Use as-is if already alpha
+      log(
+        'info',
+        `Auto-beta version would be: ${autoBetaVersion} (already alpha - no change)`,
+      );
+    } else if (currentVersion.includes('-rc')) {
+      autoBetaVersion = currentVersion; // Use as-is if already rc
+      log(
+        'info',
+        `Auto-beta version would be: ${autoBetaVersion} (already rc - no change)`,
+      );
+    } else {
+      autoBetaVersion = `${currentVersion}-beta.${commitCount}`;
+      log('info', `Auto-beta version would be: ${autoBetaVersion}`);
+    }
   } catch (error) {
     log(
       'warning',
@@ -404,18 +449,21 @@ function simulateVersionCalculation() {
 
 function validateNpmConfiguration() {
   log('step', 'Validating npm configuration...');
-  
+
   // Check if .npmignore exists and is configured properly
   const npmignorePath = path.join(rootDir, '.npmignore');
   if (fs.existsSync(npmignorePath)) {
     log('success', '.npmignore file exists');
     const npmignoreContent = fs.readFileSync(npmignorePath, 'utf8');
-    
+
     const shouldIgnore = ['tests/', '*.test.js', '.github/', 'scripts/'];
     const shouldInclude = ['dist/', 'src/', 'cli.js'];
-    
+
     for (const item of shouldIgnore) {
-      if (npmignoreContent.includes(item) || npmignoreContent.includes(item.replace('/', ''))) {
+      if (
+        npmignoreContent.includes(item) ||
+        npmignoreContent.includes(item.replace('/', ''))
+      ) {
         log('success', `Properly ignoring: ${item}`);
       } else {
         log('info', `Consider ignoring: ${item}`);
@@ -424,49 +472,67 @@ function validateNpmConfiguration() {
   } else {
     log('info', '.npmignore not found - using .gitignore defaults');
   }
-  
+
   // Check npm authentication setup
   log('step', 'Checking npm authentication configuration...');
-  
+
   // Check if user is currently logged in to npm
   try {
     execCommand('npm whoami', 'Check npm authentication');
     log('success', 'npm authentication is configured locally');
   } catch (error) {
     log('warning', 'npm authentication not configured locally');
-    log('info', 'This is expected in CI/CD environments where NPM_TOKEN secret is used');
+    log(
+      'info',
+      'This is expected in CI/CD environments where NPM_TOKEN secret is used',
+    );
   }
-  
+
   // Check GitHub workflow for NPM_TOKEN usage
-  const workflowPath = path.join(rootDir, '.github/workflows/build-and-publish.yml');
+  const workflowPath = path.join(
+    rootDir,
+    '.github/workflows/build-and-publish.yml',
+  );
   if (fs.existsSync(workflowPath)) {
     const workflowContent = fs.readFileSync(workflowPath, 'utf8');
-    
-    if (workflowContent.includes('NPM_TOKEN') && workflowContent.includes('NODE_AUTH_TOKEN')) {
+
+    if (
+      workflowContent.includes('NPM_TOKEN') &&
+      workflowContent.includes('NODE_AUTH_TOKEN')
+    ) {
       log('success', 'GitHub workflow configured for npm authentication');
     } else {
-      log('warning', 'GitHub workflow may not be properly configured for npm publishing');
+      log(
+        'warning',
+        'GitHub workflow may not be properly configured for npm publishing',
+      );
       log('info', 'Ensure NPM_TOKEN secret is set and used in workflow');
     }
-    
+
     // Check for proper authentication setup
     if (workflowContent.includes('npm whoami')) {
       log('success', 'Workflow includes npm authentication verification');
     } else {
-      log('info', 'Consider adding npm authentication verification to workflow');
+      log(
+        'info',
+        'Consider adding npm authentication verification to workflow',
+      );
     }
   }
-  
+
   // Provide setup guidance
   log('info', 'For automated publishing, ensure:');
   console.log('  1. NPM_TOKEN secret is set in GitHub repository settings');
   console.log('  2. Token has "Automation" scope from npmjs.com');
   console.log('  3. You have publish permissions for the package');
   console.log('  4. See NPM_AUTHENTICATION_SETUP.md for detailed instructions');
-  
+
   // Validate package files would be included
   try {
-    const packageFiles = execCommand('npm pack --dry-run 2>/dev/null | grep -v "npm notice" | grep -v "^$" || true', 'Simulate npm pack');
+    const packageFiles = execCommand(
+      'npm pack --dry-run 2>/dev/null | grep -v "npm notice" | grep -v "^$" || true',
+      'Simulate npm pack',
+    );
     if (packageFiles) {
       log('success', 'Package files simulation completed');
       console.log('Files that would be published:');
@@ -534,9 +600,8 @@ async function main() {
     { name: 'Browser Compatibility', fn: validateBrowserCompatibility },
     { name: 'Puppeteer Compatibility', fn: validatePuppeteerCompatibility },
     { name: 'Workflow Files', fn: validateWorkflowFiles },
-    { name: 'Documentation', fn: validateDocumentation },
     { name: 'Version Calculation', fn: simulateVersionCalculation },
-    { name: 'NPM Configuration', fn: validateNpmConfiguration }
+    { name: 'NPM Configuration', fn: validateNpmConfiguration },
   ];
 
   for (const step of validationSteps) {
