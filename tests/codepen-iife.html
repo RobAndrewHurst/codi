@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codi IIFE Browser Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-output {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-height: 400px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.running {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🐶 Codi Browser Test Framework</h1>
+
+      <div id="status" class="status running">Initializing tests...</div>
+
+      <div class="controls">
+        <button id="runTests" onclick="runAllTests()">Run Tests</button>
+        <button id="clearOutput" onclick="clearOutput()">Clear Output</button>
+        <button id="downloadResults" onclick="downloadResults()">
+          Download Results
+        </button>
+      </div>
+
+      <div id="test-output" class="test-output">Loading Codi framework...</div>
+    </div>
+
+    <!-- Load the IIFE build -->
+    <script src="../dist/codi.browser.js"></script>
+
+    <script>
+        // Test results storage
+        let testResults = null;
+        
+        // Setup console redirection
+        function setupConsoleRedirect() {
+            const output = document.getElementById('test-output');
+            const originalConsole = {
+                log: console.log,
+                error: console.error,
+                warn: console.warn,
+                info: console.info
+            };
+            
+            function createLogger(type, color) {
+                return function(...args) {
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    
+                    const timestamp = new Date().toLocaleTimeString();
+                    const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+                    
+                    // Add to output
+                    const span = document.createElement('span');
+                    span.style.color = color;
+                    span.textContent = logEntry;
+                    output.appendChild(span);
+                    
+                    // Auto-scroll to bottom
+                    output.scrollTop = output.scrollHeight;
+                    
+                    // Call original
+                    originalConsole[type](...args);
+                };
+            }
+            
+            console.log = createLogger('log', '#ffffff');
+            console.error = createLogger('error', '#ff6b6b');
+            console.warn = createLogger('warn', '#ffa726');
+            console.info = createLogger('info', '#42a5f5');
+        }
+        
+        function updateStatus(message, type = 'running') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function clearOutput() {
+            document.getElementById('test-output').innerHTML = '';
+        }
+        
+        function downloadResults() {
+            if (!testResults) {
+                alert('No test results available. Run tests first.');
+                return;
+            }
+            
+            const data = JSON.stringify(testResults, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `codi-test-results-${new Date().getTime()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Simulate delay for demonstration
+        function simulateDelay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Sequential setup tests
+        async function setupTests() {
+            describe({ name: 'Setup Tests', id: 'setup' }, async () => {
+                it({ name: 'Should initialize setup', parentId: 'setup' }, async () => {
+                    await simulateDelay(100);
+                    assertEqual(true, true, 'Workspace initialized');
+                    console.log('✅ Setup Test 1 completed');
+                });
+
+                it({ name: 'Should do some more setup', parentId: 'setup' }, async () => {
+                    await simulateDelay(75);
+                    assertEqual(true, true, 'Query system ready');
+                    console.log('✅ Setup Test 2 completed');
+                });
+            });
+        }
+
+        // Test batch 1
+        async function batchOne() {
+            describe({ name: 'Batch 1 - Basic Operations', id: 'batch_1' }, async () => {
+                await Promise.all([
+                    it({ name: 'Test 1.1 - Math operations', parentId: 'batch_1' }, async () => {
+                        await simulateDelay(50);
+                        assertEqual(2 + 2, 4, 'Basic math should work');
+                        console.log('✅ Math test passed');
+                    }),
+                    it({ name: 'Test 1.2 - String operations', parentId: 'batch_1' }, async () => {
+                        await simulateDelay(40);
+                        assertEqual('hello'.toUpperCase(), 'HELLO', 'String methods should work');
+                        console.log('✅ String test passed');
+                    }),
+                    it({ name: 'Test 1.3 - Boolean logic', parentId: 'batch_1' }, async () => {
+                        await simulateDelay(30);
+                        assertTrue(true && true, 'Boolean logic should work');
+                        console.log('✅ Boolean test passed');
+                    }),
+                ]);
+            });
+        }
+
+        // Test batch 2 - DOM operations
+        async function batchTwo() {
+            describe({ name: 'Batch 2 - DOM Operations', id: 'batch_2', parentId: 'batch_1' }, async () => {
+                await Promise.all([
+                    it({ name: 'Test 2.1 - Element creation', parentId: 'batch_2' }, async () => {
+                        await simulateDelay(60);
+                        const div = document.createElement('div');
+                        div.textContent = 'Test element';
+                        assertEqual(div.tagName, 'DIV', 'Should create div element');
+                        console.log('✅ Element creation test passed');
+                    }),
+                    it({ name: 'Test 2.2 - Event handling', parentId: 'batch_2' }, async () => {
+                        await simulateDelay(80);
+                        const button = document.createElement('button');
+                        let clicked = false;
+                        button.addEventListener('click', () => { clicked = true; });
+                        button.click();
+                        assertTrue(clicked, 'Event should be handled');
+                        console.log('✅ Event handling test passed');
+                    }),
+                    it({ name: 'Test 2.3 - Style manipulation', parentId: 'batch_2' }, async () => {
+                        await simulateDelay(45);
+                        const elem = document.createElement('span');
+                        elem.style.color = 'red';
+                        assertEqual(elem.style.color, 'red', 'Should set styles');
+                        console.log('✅ Style manipulation test passed');
+                    }),
+                ]);
+            });
+        }
+
+        // Test batch 3 - Async operations
+        async function batchThree() {
+            describe({ name: 'Batch 3 - Async Operations', id: 'batch_3', parentId: 'batch_2' }, async () => {
+                await Promise.all([
+                    it({ name: 'Test 3.1 - Promise handling', parentId: 'batch_3' }, async () => {
+                        await simulateDelay(120);
+                        const result = await Promise.resolve('async result');
+                        assertEqual(result, 'async result', 'Should handle promises');
+                        console.log('✅ Promise test passed');
+                    }),
+                    it({ name: 'Test 3.2 - Timeout operations', parentId: 'batch_3' }, async () => {
+                        await simulateDelay(100);
+                        const promise = new Promise(resolve => {
+                            setTimeout(() => resolve('timeout result'), 50);
+                        });
+                        const result = await promise;
+                        assertEqual(result, 'timeout result', 'Should handle timeouts');
+                        console.log('✅ Timeout test passed');
+                    }),
+                    it({ name: 'Test 3.3 - Object comparison', parentId: 'batch_3' }, async () => {
+                        await simulateDelay(70);
+                        const obj1 = { a: 1, b: { c: 2 } };
+                        const obj2 = { a: 1, b: { c: 2 } };
+                        assertEqual(obj1, obj2, 'Should deeply compare objects');
+                        console.log('✅ Object comparison test passed');
+                    }),
+                ]);
+            });
+        }
+
+        // Test batch 4 - Error handling
+        async function batchFour() {
+            describe({ name: 'Batch 4 - Error Handling', id: 'batch_4', parentId: 'batch_3' }, async () => {
+                await Promise.all([
+                    it({ name: 'Test 4.1 - Exception testing', parentId: 'batch_4' }, async () => {
+                        await simulateDelay(90);
+                        assertThrows(() => {
+                            throw new Error('Test error');
+                        }, 'Test error', 'Should catch thrown errors');
+                        console.log('✅ Exception test passed');
+                    }),
+                    it({ name: 'Test 4.2 - False assertions', parentId: 'batch_4' }, async () => {
+                        await simulateDelay(55);
+                        assertFalse(false, 'False should be false');
+                        console.log('✅ False assertion test passed');
+                    }),
+                    it({ name: 'Test 4.3 - Array duplicate check', parentId: 'batch_4' }, async () => {
+                        await simulateDelay(85);
+                        const uniqueArray = ['a', 'b', 'c'];
+                        assertNoDuplicates(uniqueArray, 'Array should have no duplicates');
+                        console.log('✅ Array duplicate test passed');
+                    }),
+                ]);
+            });
+        }
+
+        // Performance test
+        async function performanceTests() {
+            describe({ name: 'Performance Tests', id: 'performance' }, async () => {
+                it({ name: 'Large dataset processing', parentId: 'performance' }, async () => {
+                    const startTime = performance.now();
+                    const data = Array.from({ length: 10000 }, (_, i) => ({ id: i, value: Math.random() }));
+                    const filtered = data.filter(item => item.value > 0.5);
+                    const endTime = performance.now();
+                    
+                    assertTrue(filtered.length > 0, 'Should process large dataset');
+                    assertTrue(endTime - startTime < 1000, 'Should complete within reasonable time');
+                    console.log(`✅ Performance test passed (${(endTime - startTime).toFixed(2)}ms)`);
+                });
+            });
+        }
+
+        // Main test execution function
+        async function runAllTests() {
+            const runButton = document.getElementById('runTests');
+            runButton.disabled = true;
+            
+            try {
+                updateStatus('Clearing previous results...', 'running');
+                clearOutput();
+                
+                console.log('🐶 Starting Codi browser tests...');
+                console.log('Framework version:', codi.version);
+                console.log('═'.repeat(50));
+                
+                updateStatus('Running test suites...', 'running');
+                
+                // Execute test function
+                testResults = await codi.runWebTestFunction(async () => {
+                    // Sequential setup tests
+                    await setupTests();
+                    
+                    // Parallel test batches
+                    console.log('\n🚀 Running parallel test batches...');
+                    await Promise.all([
+                        batchOne(),
+                        batchTwo(),
+                        batchThree(),
+                        batchFour()
+                    ]);
+                    
+                    // Performance tests
+                    console.log('\n⚡ Running performance tests...');
+                    await performanceTests();
+                    
+                }, {
+                    quiet: false,
+                    showSummary: true
+                });
+                
+                console.log('═'.repeat(50));
+                console.log('🎉 All tests completed!');
+                
+                // Update status based on results
+                if (testResults.failedTests === 0) {
+                    updateStatus(`✅ All ${testResults.passedTests} tests passed!`, 'success');
+                } else {
+                    updateStatus(`❌ ${testResults.failedTests} tests failed, ${testResults.passedTests} passed`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('💥 Test execution failed:', error);
+                updateStatus('Test execution failed', 'error');
+            } finally {
+                runButton.disabled = false;
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setupConsoleRedirect();
+            
+            if (typeof codi === 'undefined') {
+                updateStatus('❌ Codi framework failed to load', 'error');
+                console.error('Codi framework is not available');
+                return;
+            }
+            
+            updateStatus('✅ Codi framework loaded successfully', 'success');
+            console.log('🐶 Codi framework loaded successfully!');
+            console.log('Available functions:', Object.keys(codi));
+            console.log('Ready to run tests. Click "Run Tests" to begin.');
+            
+            // Auto-run tests after a short delay
+            setTimeout(() => {
+                console.log('\n🔄 Auto-running tests in 2 seconds...');
+                setTimeout(runAllTests, 2000);
+            }, 1000);
+        });
+    </script>
+  </body>
+</html>

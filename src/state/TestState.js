@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+
 /**
  * Class representing the state of test execution
  * @class TestState
@@ -203,7 +204,10 @@ const printSuite = (suite, indent, options) => {
         indentation +
           chalk.red(`  └─ ⛔ ${result.name} (${result.duration.toFixed(2)}ms)`),
       );
-      console.log(indentation + chalk.red(`     ${result.error.message}`));
+      const errorMessage = result.error?.message
+        ? result.error.message
+        : 'Unknown error';
+      console.log(indentation + chalk.red(`     ${errorMessage}`));
     } else {
       console.log(
         indentation +

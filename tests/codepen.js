@@ -1,5 +1,48 @@
-// Import and run tests
-import * as codi from 'https://esm.sh/codi-test-framework@1.0.15';
+// Try to import from ESM CDN with error handling
+let codi;
+try {
+  // Use the browser-specific build to avoid Node.js dependencies
+  codi = await import(
+    'https://cdn.jsdelivr.net/npm/codi-test-framework@1.0.39/src/_codi.browser.js'
+  );
+  console.log('✅ Successfully loaded Codi from JSDelivr CDN');
+} catch (error) {
+  console.error('❌ Failed to import Codi from CDN:', error.message);
+  console.log('📝 Using fallback implementation...');
+
+  // Fallback: create a minimal codi implementation
+  codi = {
+    describe: (params, callback) => {
+      console.log(`📋 Suite: ${params.name}`);
+      return Promise.resolve(callback());
+    },
+    it: (params, callback) => {
+      console.log(`  🧪 Test: ${params.name}`);
+      return Promise.resolve(callback());
+    },
+    assertEqual: (actual, expected, message) => {
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        throw new Error(message || `Expected ${actual} to equal ${expected}`);
+      }
+      console.log('    ✅ Assertion passed');
+    },
+    runWebTestFunction: async (testFn, options = {}) => {
+      console.log('🚀 Running tests with fallback implementation...');
+      try {
+        await testFn();
+        console.log('🎉 Tests completed successfully');
+        return { passedTests: 1, failedTests: 0, suiteStack: {} };
+      } catch (error) {
+        console.error('💥 Test failed:', error.message);
+        return { passedTests: 0, failedTests: 1, suiteStack: {} };
+      }
+    },
+    codepenLogging: () => {
+      console.log('📺 Codepen logging initialized (fallback)');
+      return console;
+    },
+  };
+}
 
 codi.codepenLogging();
 

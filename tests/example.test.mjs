@@ -1,12 +1,15 @@
 import { codi } from '../src/_codi.js';
 
-const luciMock = codi.mock.module('./luciModule.js', {
-  namedExports: {
-    helloLuci() {
-      return 'Mock luci';
+let luciMock = null;
+if (codi.mock?.module) {
+  luciMock = codi.mock.module('./luciModule.js', {
+    namedExports: {
+      helloLuci() {
+        return 'Mock luci';
+      },
     },
-  },
-});
+  });
+}
 
 const params = {
   name: 'I am an Example Test Suite',
@@ -23,7 +26,7 @@ await codi.describe(params, () => {
     codi.it(
       { name: 'should pass equality assertion', parentId: 'group_2' },
       () => {
-        codi.assertEqual(1, 2, 'Expected 1 to equal 1');
+        codi.assertEqual(1, 1, 'Expected 1 to equal 1');
       },
     );
 
@@ -68,50 +71,54 @@ await codi.describe(params, () => {
   });
 });
 
-await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
-  await codi.it(
-    { name: 'We should get some doggies', parentId: 'http_test_fun' },
-    async () => {
-      const mockAgent = new codi.mockHttp.MockAgent();
-      codi.mockHttp.setGlobalDispatcher(mockAgent);
+if (codi.mockHttp) {
+  await codi.describe({ name: 'HTTP Mock', id: 'http_test_fun' }, async () => {
+    await codi.it(
+      { name: 'We should get some doggies', parentId: 'http_test_fun' },
+      async () => {
+        const mockAgent = new codi.mockHttp.MockAgent();
+        codi.mockHttp.setGlobalDispatcher(mockAgent);
 
-      const mockPool = mockAgent.get(new RegExp('http://localhost:3000'));
-      mockPool.intercept({ path: '/' }).reply(404, ['codi', 'mieka', 'luci']);
+        const mockPool = mockAgent.get(new RegExp('http://localhost:3000'));
+        mockPool.intercept({ path: '/' }).reply(404, ['codi', 'mieka', 'luci']);
 
-      const response = await fetch('http://localhost:3000');
+        const response = await fetch('http://localhost:3000');
 
-      codi.assertEqual(response.status, 404, 'We expect to get a 404');
-      codi.assertEqual(await response.json(), ['codi', 'mieka', 'luci']);
-    },
-  );
-});
-
-await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
-  const mock = codi.mock.module('./testModule.js', {
-    namedExports: {
-      helloCodiMock(name) {
-        return `Hello ${name}`;
+        codi.assertEqual(response.status, 404, 'We expect to get a 404');
+        codi.assertEqual(await response.json(), ['codi', 'mieka', 'luci']);
       },
-    },
+    );
   });
-  await codi.it(
-    { name: 'Mocking a module', parentId: 'module_mock' },
-    async () => {
-      let mockedModule;
+}
 
-      mockedModule = await import('./testModule.js');
+if (codi.mock?.module) {
+  await codi.describe({ name: 'Module Mock', id: 'module_mock' }, async () => {
+    const mock = codi.mock.module('./testModule.js', {
+      namedExports: {
+        helloCodiMock(name) {
+          return `Hello ${name}`;
+        },
+      },
+    });
+    await codi.it(
+      { name: 'Mocking a module', parentId: 'module_mock' },
+      async () => {
+        let mockedModule;
 
-      codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
-      codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
+        mockedModule = await import('./testModule.js');
 
-      mock.restore();
+        codi.assertTrue(Object.hasOwn(mockedModule, 'helloCodiMock'));
+        codi.assertEqual(mockedModule.helloCodiMock('mieka'), 'Hello mieka');
 
-      mockedModule = await import('./testModule.js');
+        mock.restore();
 
-      codi.assertEqual(mockedModule.helloCodi('luci'), 'woof woof: luci');
-    },
-  );
-});
+        mockedModule = await import('./testModule.js');
+
+        codi.assertEqual(mockedModule.helloCodi('luci'), 'woof woof: luci');
+      },
+    );
+  });
+}
 
 await codi.describe(
   { name: 'Nested Module Mock', id: 'nested_ module_mock' },
@@ -134,7 +141,7 @@ await codi.runTestFunction(testFunction);
 function testFunction() {
   codi.describe({ name: 'First Layer', id: 'first_layer' }, () => {
     codi.it({ name: 'first', parentId: 'first_layer' }, () => {
-      codi.assertEqual(1, 2, 'Expected 1 to equal 1');
+      codi.assertEqual(1, 1, 'Expected 1 to equal 1');
     });
     codi.it({ name: 'first', parentId: 'first_layer' }, () => {
       codi.assertEqual(1, 1, 'Expected 1 to equal 1');

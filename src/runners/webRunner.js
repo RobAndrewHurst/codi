@@ -1,5 +1,5 @@
-import { state } from '../state/TestState.js';
 import chalk from 'chalk';
+import { state } from '../state/TestState.js';
 
 /**
  * Run a web test file

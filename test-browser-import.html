@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codi Browser Import Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+    </style>
+  </head>
+  <body>
+    <h1>🐶 Codi Browser Import Test</h1>
+
+    <div class="test-section">
+      <h2>📋 Version Selection</h2>
+      <label for="version-select">Test Version: </label>
+      <select id="version-select">
+        <option value="latest">Latest Stable</option>
+        <option value="beta">Latest Beta</option>
+        <option value="alpha">Latest Alpha</option>
+        <option value="1.0.39">v1.0.39 (Specific)</option>
+      </select>
+      <button id="run-tests" style="margin-left: 10px; padding: 5px 15px;">
+        Run Tests
+      </button>
+      <button id="test-local" style="margin-left: 10px; padding: 5px 15px;">
+        Test Local Build
+      </button>
+    </div>
+
+    <div id="results"></div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        const versionSelect = document.getElementById('version-select');
+        const runTestsBtn = document.getElementById('run-tests');
+        const testLocalBtn = document.getElementById('test-local');
+
+        function addResult(title, success, message, details = '') {
+            const div = document.createElement('div');
+            div.className = `test-result ${success ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <h3>${success ? '✅' : '❌'} ${title}</h3>
+                <p>${message}</p>
+                ${details ? `<pre>${details}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+
+        function addInfo(title, message) {
+            const div = document.createElement('div');
+            div.className = 'test-result info';
+            div.innerHTML = `
+                <h3>ℹ️ ${title}</h3>
+                <p>${message}</p>
+            `;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            results.innerHTML = '';
+        }
+
+        async function runVersionTests(version) {
+            clearResults();
+            addInfo('Testing Configuration', `Version: ${version} | Timestamp: ${new Date().toLocaleString()}`);
+
+            // Test 1: Browser-specific ESM import
+            addInfo('Test 1', `Attempting ESM import from JSDelivr (browser-specific entry point)...`);
+            
+            try {
+                const esmUrl = `https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/src/_codi.browser.js`;
+                const codi = await import(esmUrl);
+                
+                addResult(
+                    'JSDelivr ESM Import (Browser Entry)',
+                    true,
+                    'Successfully imported Codi from JSDelivr CDN using browser-specific entry point',
+                    `URL: ${esmUrl}\nVersion: ${codi.version || 'Unknown'}\nAvailable functions: ${Object.keys(codi).join(', ')}`
+                );
+
+                // Test functionality
+                await testFunctionality(codi, 'ESM Import');
+
+            } catch (importError) {
+                addResult(
+                    'JSDelivr ESM Import (Browser Entry)',
+                    false,
+                    'Failed to import from JSDelivr CDN',
+                    `Error: ${importError.message}\nStack: ${importError.stack}`
+                );
+
+                // Fallback to UNPKG
+                addInfo('Test 1b', 'Attempting fallback to UNPKG CDN...');
+                try {
+                    const unpkgUrl = `https://unpkg.com/codi-test-framework@${version}/src/_codi.browser.js`;
+                    const codi = await import(unpkgUrl);
+                    addResult(
+                        'UNPKG ESM Import (Browser Entry)',
+                        true,
+                        'Successfully imported from UNPKG CDN as fallback',
+                        `URL: ${unpkgUrl}\nVersion: ${codi.version || 'Unknown'}\nAvailable functions: ${Object.keys(codi).join(', ')}`
+                    );
+                    await testFunctionality(codi, 'UNPKG Import');
+                } catch (unpkgError) {
+                    addResult(
+                        'UNPKG ESM Import (Browser Entry)',
+                        false,
+                        'Fallback to UNPKG also failed',
+                        unpkgError.message
+                    );
+                }
+            }
+
+            // Test 2: IIFE build
+            addInfo('Test 2', 'Testing IIFE build availability...');
+            await testIIFEBuild(version);
+
+            // Test 3: Primary ESM.sh import (should now work with fixed main entry point)
+            addInfo('Test 3', 'Testing ESM.sh with main entry point (should now work)...');
+            try {
+                const esmUrl = `https://esm.sh/codi-test-framework@${version}`;
+                const codi = await import(esmUrl);
+                addResult(
+                    'ESM.sh Import (Main Entry)',
+                    true,
+                    'ESM.sh import succeeded with main entry point - this is the preferred method!',
+                    `URL: ${esmUrl}\nVersion: ${codi.version || 'Unknown'}\nAvailable functions: ${Object.keys(codi).join(', ')}`
+                );
+                
+                // Test functionality with esm.sh import
+                await testFunctionality(codi, 'ESM.sh');
+                
+            } catch (esmError) {
+                addResult(
+                    'ESM.sh Import (Main Entry)',
+                    false,
+                    'ESM.sh import failed - this should now work with the fixed main entry point',
+                    `Error: ${esmError.message}\nStack: ${esmError.stack}`
+                );
+            }
+
+            // Add recommendations
+            addRecommendations(version);
+        }
+
+        async function testFunctionality(codi, testContext) {
+            try {
+                let testPassed = false;
+                let testDetails = [];
+
+                // Test individual functions
+                const functionsToTest = ['describe', 'it', 'assertEqual', 'assertTrue', 'assertFalse'];
+                const availableFunctions = functionsToTest.filter(fn => typeof codi[fn] === 'function');
+                testDetails.push(`Available functions: ${availableFunctions.join(', ')}`);
+
+                if (availableFunctions.length === functionsToTest.length) {
+                    // Run a basic test
+                    await codi.runWebTestFunction(async () => {
+                        codi.describe({ name: `${testContext} Test`, id: 'import_test' }, () => {
+                            codi.it({ name: 'should work correctly', parentId: 'import_test' }, () => {
+                                codi.assertEqual(2 + 2, 4, 'Math should work');
+                                codi.assertTrue(typeof window !== 'undefined', 'Window should be available');
+                                codi.assertFalse(typeof process !== 'undefined', 'Process should not be available in browser');
+                                testPassed = true;
+                            });
+                        });
+                    }, { quiet: true, showSummary: false });
+                    
+                    testDetails.push('Basic functionality test passed');
+                } else {
+                    testDetails.push(`Missing functions: ${functionsToTest.filter(fn => !availableFunctions.includes(fn)).join(', ')}`);
+                }
+
+                addResult(
+                    `${testContext} Functionality Test`,
+                    testPassed,
+                    testPassed ? 'All assertion functions work correctly' : 'Some functionality issues detected',
+                    testDetails.join('\n')
+                );
+
+            } catch (funcError) {
+                addResult(
+                    `${testContext} Functionality Test`,
+                    false,
+                    'Import succeeded but functionality test failed',
+                    `Error: ${funcError.message}\nStack: ${funcError.stack}`
+                );
+            }
+        }
+
+        async function testIIFEBuild(version) {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                const scriptUrl = `https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/dist/codi.browser.js`;
+                script.src = scriptUrl;
+                
+                script.onload = () => {
+                    if (typeof window.codi !== 'undefined') {
+                        addResult(
+                            'IIFE Build Load',
+                            true,
+                            'IIFE build loaded successfully and codi is available globally',
+                            `URL: ${scriptUrl}\nGlobal codi object available with functions: ${Object.keys(window.codi).join(', ')}\nVersion: ${window.codi.version || 'Unknown'}`
+                        );
+                        
+                        // Test IIFE functionality
+                        testIIFEFunctionality();
+                    } else {
+                        addResult(
+                            'IIFE Build Load',
+                            false,
+                            'IIFE build loaded but codi global not found',
+                            `URL: ${scriptUrl}\nScript loaded but window.codi is undefined`
+                        );
+                    }
+                    resolve();
+                };
+                
+                script.onerror = (error) => {
+                    addResult(
+                        'IIFE Build Load',
+                        false,
+                        'Failed to load IIFE build from CDN',
+                        `URL: ${scriptUrl}\nThis might indicate the file is not published or CDN is not accessible\nError: ${error}`
+                    );
+                    resolve();
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        function testIIFEFunctionality() {
+            try {
+                if (typeof window.codi === 'undefined') {
+                    throw new Error('window.codi is not available');
+                }
+
+                // Test that individual functions are also available globally
+                const globalFunctions = ['describe', 'it', 'assertEqual', 'assertTrue', 'assertFalse'];
+                const availableGlobals = globalFunctions.filter(fn => typeof window[fn] === 'function');
+                
+                let testPassed = false;
+                
+                // Run a simple test using global functions
+                if (availableGlobals.includes('assertEqual')) {
+                    window.assertEqual(3 + 3, 6, 'Global function test');
+                    testPassed = true;
+                }
+
+                addResult(
+                    'IIFE Global Functions Test',
+                    testPassed,
+                    testPassed ? 'Global functions are working correctly' : 'Global functions test failed',
+                    `Available global functions: ${availableGlobals.join(', ')}\nMissing: ${globalFunctions.filter(fn => !availableGlobals.includes(fn)).join(', ')}`
+                );
+
+            } catch (error) {
+                addResult(
+                    'IIFE Global Functions Test',
+                    false,
+                    'IIFE functionality test failed',
+                    `Error: ${error.message}`
+                );
+            }
+        }
+
+        async function testLocalBuild() {
+            clearResults();
+            addInfo('Local Build Test', 'Testing locally built bundle...');
+
+            // Test local IIFE build
+            const script = document.createElement('script');
+            script.src = './dist/codi.browser.js';
+            
+            script.onload = () => {
+                if (typeof window.codi !== 'undefined') {
+                    addResult(
+                        'Local IIFE Build',
+                        true,
+                        'Local IIFE build loaded successfully',
+                        `Local build available with functions: ${Object.keys(window.codi).join(', ')}\nVersion: ${window.codi.version || 'Unknown'}`
+                    );
+                    testIIFEFunctionality();
+                } else {
+                    addResult(
+                        'Local IIFE Build',
+                        false,
+                        'Local IIFE build loaded but codi global not found',
+                        'Check if dist/codi.browser.js exists and is properly built'
+                    );
+                }
+            };
+            
+            script.onerror = () => {
+                addResult(
+                    'Local IIFE Build',
+                    false,
+                    'Failed to load local IIFE build',
+                    'Make sure you have run "npm run build" and the dist/codi.browser.js file exists'
+                );
+            };
+
+            document.head.appendChild(script);
+        }
+
+        function addRecommendations(version) {
+            setTimeout(() => {
+                const recommendations = document.createElement('div');
+                recommendations.className = 'test-section';
+                recommendations.innerHTML = `
+                    <h2>📋 Recommendations for Version ${version}</h2>
+                    <p><strong>For reliable browser usage:</strong></p>
+                    <ol>
+                        <li><strong>🎯 Preferred:</strong> Use ESM.sh with main entry point (now browser-compatible):
+                            <br><code>https://esm.sh/codi-test-framework@${version}</code></li>
+                        <li><strong>Alternative:</strong> Use JSDelivr with browser-specific entry point:
+                            <br><code>https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/src/_codi.browser.js</code></li>
+                        <li><strong>Script Tag:</strong> Use IIFE build for script tag inclusion:
+                            <br><code>https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/dist/codi.browser.js</code></li>
+                        <li><strong>Experimental:</strong> For testing beta/alpha versions:
+                            <br><code>https://esm.sh/codi-test-framework@beta</code></li>
+                        <li><strong>Development:</strong> Use local build for offline development</li>
+                    </ol>
+
+                    <h3>🔧 Quick Implementation Examples</h3>
+                    <p><strong>🎯 ESM Import (Recommended - ESM.sh):</strong></p>
+                    <pre>import * as codi from 'https://esm.sh/codi-test-framework@${version}';</pre>
+                    
+                    <p><strong>ESM Import (Alternative - JSDelivr):</strong></p>
+                    <pre>import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/src/_codi.browser.js';</pre>
+                    
+                    <p><strong>Script Tag:</strong></p>
+                    <pre>&lt;script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/dist/codi.browser.js"&gt;&lt;/script&gt;</pre>
+
+                    <h3>🚀 Automated Build Information</h3>
+                    <p>This version was built using the automated CI/CD pipeline which:</p>
+                    <ul>
+                        <li>✅ Runs comprehensive tests (Node.js + Browser)</li>
+                        <li>✅ Validates bundle integrity</li>
+                        <li>✅ Ensures CDN compatibility (ESM.sh, JSDelivr, UNPKG)</li>
+                        <li>✅ Tests main entry point browser compatibility</li>
+                        <li>✅ Publishes with appropriate npm tags</li>
+                    </ul>
+                    
+                    <h3>✨ ESM.sh Compatibility</h3>
+                    <p>The main entry point now works seamlessly with ESM.sh by:</p>
+                    <ul>
+                        <li>🔧 Using browser-safe dynamic imports</li>
+                        <li>🔧 Providing stub functions for Node.js-only features in browser</li>
+                        <li>🔧 Avoiding top-level await that can break ESM.sh</li>
+                        <li>🔧 Maintaining full compatibility with both browser and Node.js</li>
+                    </ul>
+                `;
+                results.appendChild(recommendations);
+            }, 1000);
+        }
+
+        // Event listeners
+        runTestsBtn.addEventListener('click', () => {
+            const selectedVersion = versionSelect.value;
+            runVersionTests(selectedVersion);
+        });
+
+        testLocalBtn.addEventListener('click', () => {
+            testLocalBuild();
+        });
+
+        // Auto-run tests for latest version on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            runVersionTests('latest');
+        });
+
+    </script>
+  </body>
+</html>

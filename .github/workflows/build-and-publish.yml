@@ -1,0 +1,472 @@
+name: Build, Test, and Publish
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      publish_type:
+        description: 'Publish type'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - alpha
+          - rc
+          - latest
+      force_version:
+        description: 'Force specific version (optional)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      new_version: ${{ steps.version.outputs.new_version }}
+      should_publish: ${{ steps.version.outputs.should_publish }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for version calculation
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Calculate version
+        id: version
+        run: |
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Determine if we should publish and what version to use
+          SHOULD_PUBLISH="false"
+          NEW_VERSION="$CURRENT_VERSION"
+          PUBLISH_TYPE="none"
+          
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual workflow dispatch
+            SHOULD_PUBLISH="true"
+            PUBLISH_TYPE="${{ github.event.inputs.publish_type }}"
+            
+            if [[ -n "${{ github.event.inputs.force_version }}" ]]; then
+              NEW_VERSION="${{ github.event.inputs.force_version }}"
+            else
+              # Calculate new version based on publish type
+              case "$PUBLISH_TYPE" in
+                "beta")
+                  # Check if current version already has beta
+                  if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
+                    # Increment beta number
+                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-beta.' '{print $1"-beta."($2+1)}')
+                  else
+                    # Add beta.1 to current version
+                    NEW_VERSION="${CURRENT_VERSION}-beta.1"
+                  fi
+                  ;;
+                "alpha")
+                  if [[ "$CURRENT_VERSION" == *"-alpha."* ]]; then
+                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-alpha.' '{print $1"-alpha."($2+1)}')
+                  else
+                    NEW_VERSION="${CURRENT_VERSION}-alpha.1"
+                  fi
+                  ;;
+                "rc")
+                  if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
+                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F'-rc.' '{print $1"-rc."($2+1)}')
+                  else
+                    NEW_VERSION="${CURRENT_VERSION}-rc.1"
+                  fi
+                  ;;
+                "latest")
+                  # For latest, we keep the current version
+                  NEW_VERSION="$CURRENT_VERSION"
+                  ;;
+              esac
+            fi
+            
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Tag push - publish as latest
+            SHOULD_PUBLISH="true"
+            PUBLISH_TYPE="latest"
+            NEW_VERSION="${{ github.ref_name }}"
+            NEW_VERSION="${NEW_VERSION#v}"  # Remove 'v' prefix
+            
+          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+            # Main branch push - auto-publish beta if tests pass
+            SHOULD_PUBLISH="true"
+            PUBLISH_TYPE="beta"
+            
+            # Auto-increment beta version
+            COMMIT_COUNT=$(git rev-list --count HEAD)
+            NEW_VERSION="${CURRENT_VERSION}-beta.${COMMIT_COUNT}"
+          fi
+          
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "should_publish=$SHOULD_PUBLISH" >> $GITHUB_OUTPUT
+          echo "publish_type=$PUBLISH_TYPE" >> $GITHUB_OUTPUT
+          
+          echo "Will publish: $SHOULD_PUBLISH"
+          echo "Publish type: $PUBLISH_TYPE"
+          echo "New version: $NEW_VERSION"
+
+      - name: Update version in package.json
+        if: steps.version.outputs.should_publish == 'true' && steps.version.outputs.new_version != steps.version.outputs.version
+        run: |
+          npm version ${{ steps.version.outputs.new_version }} --no-git-tag-version
+          echo "Updated package.json to version ${{ steps.version.outputs.new_version }}"
+
+      - name: Build browser bundle
+        run: |
+          echo "🔨 Building browser bundle..."
+          npm run build
+          
+          # Verify build output
+          if [ ! -f "dist/codi.browser.js" ]; then
+            echo "❌ Browser bundle build failed - dist/codi.browser.js not found"
+            exit 1
+          fi
+          
+          # Get build stats
+          BUNDLE_SIZE=$(stat -c%s "dist/codi.browser.js")
+          BUNDLE_SIZE_KB=$(echo "scale=2; $BUNDLE_SIZE / 1024" | bc)
+          
+          echo "✅ Browser bundle built successfully"
+          echo "📏 Bundle size: ${BUNDLE_SIZE_KB} KB"
+          
+          # Store build info
+          echo "bundle_size_kb=${BUNDLE_SIZE_KB}" >> $GITHUB_ENV
+
+      - name: Run Node.js tests
+        run: |
+          echo "🧪 Running Node.js tests..."
+          node cli.js tests --returnResults
+          echo "✅ Node.js tests passed"
+
+      - name: Install Chrome for browser tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --fix-missing
+
+      - name: Run browser tests
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+        run: |
+          echo "🌐 Running browser tests..."
+          node cli.js tests --browser --returnResults
+          echo "✅ Browser tests passed"
+
+      - name: Test built browser bundle
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+        run: |
+          echo "🔍 Testing built browser bundle..."
+          
+          # Create a simple test file for the built bundle
+          cat > test-built-bundle.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Built Bundle Test</title>
+          </head>
+          <body>
+              <div id="results"></div>
+              <script src="./dist/codi.browser.js"></script>
+              <script>
+                  const results = document.getElementById('results');
+                  
+                  try {
+                      // Test that codi is available globally
+                      if (typeof codi === 'undefined') {
+                          throw new Error('codi global not found');
+                      }
+                      
+                      // Test basic functionality
+                      let testPassed = false;
+                      codi.describe({ name: 'Built Bundle Test', id: 'bundle_test' }, () => {
+                          codi.it({ name: 'should have all functions', parentId: 'bundle_test' }, () => {
+                              codi.assertEqual(typeof codi.describe, 'function', 'describe should be function');
+                              codi.assertEqual(typeof codi.it, 'function', 'it should be function');
+                              codi.assertEqual(typeof codi.assertEqual, 'function', 'assertEqual should be function');
+                              testPassed = true;
+                          });
+                      });
+                      
+                      if (testPassed) {
+                          results.innerHTML = '<div style="color: green;">✅ Built bundle test passed</div>';
+                      } else {
+                          results.innerHTML = '<div style="color: red;">❌ Built bundle test failed</div>';
+                      }
+                      
+                  } catch (error) {
+                      results.innerHTML = '<div style="color: red;">❌ Built bundle test error: ' + error.message + '</div>';
+                  }
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          # Test the bundle with Puppeteer
+          node -e "
+          const puppeteer = require('puppeteer');
+          const fs = require('fs');
+          const path = require('path');
+          
+          (async () => {
+              const browser = await puppeteer.launch({
+                  headless: true,
+                  args: ['--no-sandbox', '--disable-setuid-sandbox']
+              });
+              
+              const page = await browser.newPage();
+              
+              // Serve the test file locally
+              const testFile = path.resolve('./test-built-bundle.html');
+              await page.goto('file://' + testFile);
+              
+              // Wait for test to complete
+              await page.waitForTimeout(2000);
+              
+              // Check results
+              const results = await page.evaluate(() => {
+                  const elem = document.getElementById('results');
+                  return elem ? elem.textContent : 'No results found';
+              });
+              
+              console.log('Bundle test results:', results);
+              
+              if (results.includes('✅')) {
+                  console.log('✅ Built bundle test passed');
+              } else {
+                  console.error('❌ Built bundle test failed');
+                  process.exit(1);
+              }
+              
+              await browser.close();
+          })();
+          "
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-bundle-${{ steps.version.outputs.new_version }}
+          path: |
+            dist/codi.browser.js
+            dist/codi.browser.js.map
+          retention-days: 30
+
+      - name: Generate build summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Build Summary
+          
+          **Version:** \`${{ steps.version.outputs.new_version }}\`  
+          **Bundle Size:** ${bundle_size_kb} KB  
+          **Should Publish:** ${{ steps.version.outputs.should_publish }}  
+          **Publish Type:** ${{ steps.version.outputs.publish_type }}
+          
+          ### ✅ Tests Passed
+          - Node.js tests
+          - Browser tests  
+          - Built bundle verification
+          
+          ### 📦 Artifacts
+          - Browser bundle: \`dist/codi.browser.js\`
+          - Source map: \`dist/codi.browser.js.map\`
+          
+          EOF
+
+  publish:
+    name: Publish to NPM
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.build.outputs.should_publish == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version in package.json
+        if: needs.build.outputs.new_version != needs.build.outputs.version
+        run: |
+          npm version ${{ needs.build.outputs.new_version }} --no-git-tag-version
+
+      - name: Build for publish
+        run: npm run build
+
+      - name: Determine publish tag
+        id: publish_tag
+        run: |
+          VERSION="${{ needs.build.outputs.new_version }}"
+          
+          if [[ "$VERSION" == *"-beta."* ]]; then
+            TAG="beta"
+          elif [[ "$VERSION" == *"-alpha."* ]]; then
+            TAG="alpha"
+          elif [[ "$VERSION" == *"-rc."* ]]; then
+            TAG="rc"
+          else
+            TAG="latest"
+          fi
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Publishing with tag: $TAG"
+
+      - name: Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "📦 Publishing to NPM..."
+          echo "Version: ${{ needs.build.outputs.new_version }}"
+          echo "Tag: ${{ steps.publish_tag.outputs.tag }}"
+          
+          # Configure npm authentication
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          
+          # Publish with appropriate tag
+          if [ "${{ steps.publish_tag.outputs.tag }}" == "latest" ]; then
+            npm publish --access public
+          else
+            npm publish --access public --tag ${{ steps.publish_tag.outputs.tag }}
+          fi
+          
+          echo "✅ Published successfully!"
+
+      - name: Create GitHub release for stable versions
+        if: ${{ steps.publish_tag.outputs.tag == 'latest' }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.build.outputs.new_version }}
+          release_name: Release v${{ needs.build.outputs.new_version }}
+          body: |
+            ## 🚀 Release v${{ needs.build.outputs.new_version }}
+            
+            ### 📦 What's Included
+            - Browser bundle: `dist/codi.browser.js`
+            - NPM package: `codi-test-framework@${{ needs.build.outputs.new_version }}`
+            
+            ### 🌐 CDN Links
+            - JSDelivr: `https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js`
+            - UNPKG: `https://unpkg.com/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js`
+            
+            ### 📖 Usage
+            ```html
+            <!-- IIFE Bundle -->
+            <script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js"></script>
+            
+            <!-- ESM Import -->
+            <script type="module">
+            import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/src/_codi.browser.js';
+            </script>
+            ```
+          draft: false
+          prerelease: false
+
+      - name: Generate publish summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 📦 Publish Summary
+          
+          **✅ Successfully published to NPM!**
+          
+          **Package:** \`codi-test-framework@${{ needs.build.outputs.new_version }}\`  
+          **Tag:** \`${{ steps.publish_tag.outputs.tag }}\`  
+          **Registry:** https://www.npmjs.com/package/codi-test-framework
+          
+          ### 🌐 CDN Usage
+          \`\`\`html
+          <!-- IIFE Bundle -->
+          <script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js"></script>
+          
+          <!-- ESM Import (Browser) -->
+          <script type="module">
+          import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/src/_codi.browser.js';
+          </script>
+          \`\`\`
+          
+          ### 📝 Installation
+          \`\`\`bash
+          # Install specific version
+          npm install codi-test-framework@${{ needs.build.outputs.new_version }}
+          
+          # Install with tag
+          npm install codi-test-framework@${{ steps.publish_tag.outputs.tag }}
+          \`\`\`
+          
+          EOF
+
+  notify:
+    name: Notify Results
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Build and Publish Status
+        run: |
+          echo "## 🎯 Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.build.result }}" == "success" ]; then
+            echo "✅ **Build:** Successful" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Build:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.build.outputs.should_publish }}" == "true" ]; then
+            if [ "${{ needs.publish.result }}" == "success" ]; then
+              echo "✅ **Publish:** Successful" >> $GITHUB_STEP_SUMMARY
+            elif [ "${{ needs.publish.result }}" == "skipped" ]; then
+              echo "⏭️ **Publish:** Skipped" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Publish:** Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⏭️ **Publish:** Not Required" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

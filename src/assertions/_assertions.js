@@ -1,9 +1,9 @@
 import { assertEqual } from './assertEqual.js';
-import { assertNotEqual } from './assertNotEqual.js';
-import { assertTrue } from './assertTrue.js';
 import { assertFalse } from './assertFalse.js';
-import { assertThrows } from './assertThrows.js';
 import { assertNoDuplicates } from './assertNoDuplicates.js';
+import { assertNotEqual } from './assertNotEqual.js';
+import { assertThrows } from './assertThrows.js';
+import { assertTrue } from './assertTrue.js';
 
 export default {
   assertEqual,

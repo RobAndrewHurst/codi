@@ -75,6 +75,39 @@ You can also run the tests from the command line using the `runCLI` function:
 codi ./tests
 ```
 
+#### Browser Testing 🌐
+
+Codi supports running tests in a headless browser environment, perfect for testing DOM manipulation, browser APIs, and web-specific functionality.
+
+To run tests in a browser environment:
+
+```bash
+codi ./tests --browser
+```
+
+Browser tests have access to:
+- `window` and `document` objects
+- DOM APIs (createElement, querySelector, etc.)
+- Browser APIs (localStorage, fetch, etc.)
+- All standard Codi assertion functions
+
+Example browser test:
+
+```javascript
+import { describe, it, assertEqual, assertTrue } from 'codi-test-framework';
+
+describe({ name: 'DOM Tests', id: 'dom_tests' }, () => {
+  it({ name: 'should create DOM elements', parentId: 'dom_tests' }, () => {
+    const div = document.createElement('div');
+    div.textContent = 'Hello World';
+    assertEqual(div.tagName, 'DIV');
+    assertTrue(div.textContent === 'Hello World');
+  });
+});
+```
+
+The browser runner uses Puppeteer under the hood and works great in CI environments like GitHub Actions.
+
 ## License 📄
 
 This project is licensed under the [MIT License](LICENSE).

@@ -1,6 +1,6 @@
+import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import chalk from 'chalk';
 import { state } from '../state/TestState.js';
 import { excludePattern } from '../util/regex.js';
 
@@ -54,6 +54,9 @@ export async function runTests(
     const matcher = excludePattern(codiConfig.excludeDirectories);
     testFiles = testFiles.filter((file) => !matcher(file));
   }
+
+  // Exclude browser-specific tests when running in Node.js
+  testFiles = testFiles.filter((file) => !file.includes('browser'));
 
   if (codiConfig.preload) {
     const preloadFiles = fs

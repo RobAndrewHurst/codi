@@ -1,5 +1,5 @@
+import { assertEqual, describe, it } from '../src/_codi.js';
 import { runWebTestFunction } from '../src/runners/webRunner.js';
-import { describe, it, assertEqual } from '../src/_codi.js';
 
 // Main test execution
 const results = await runWebTestFunction(

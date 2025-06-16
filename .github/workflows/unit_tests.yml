@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build & Run Tests
+  node-tests:
+    name: Node.js Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -23,5 +23,33 @@ jobs:
       - name: Install Bun
         run: npm install bun -g
 
-      - name: Run tests
-        run: bun run test
+      - name: Run Node.js tests
+        run: node cli.js tests --returnResults
+
+  browser-tests:
+    name: Browser Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Chrome for Puppeteer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --fix-missing
+
+      - name: Run Browser tests
+        run: node cli.js tests --browser --returnResults
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
