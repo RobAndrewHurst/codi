@@ -404,21 +404,18 @@ function simulateVersionCalculation() {
 
 function validateNpmConfiguration() {
   log('step', 'Validating npm configuration...');
-
+  
   // Check if .npmignore exists and is configured properly
   const npmignorePath = path.join(rootDir, '.npmignore');
   if (fs.existsSync(npmignorePath)) {
     log('success', '.npmignore file exists');
     const npmignoreContent = fs.readFileSync(npmignorePath, 'utf8');
-
+    
     const shouldIgnore = ['tests/', '*.test.js', '.github/', 'scripts/'];
     const shouldInclude = ['dist/', 'src/', 'cli.js'];
-
+    
     for (const item of shouldIgnore) {
-      if (
-        npmignoreContent.includes(item) ||
-        npmignoreContent.includes(item.replace('/', ''))
-      ) {
+      if (npmignoreContent.includes(item) || npmignoreContent.includes(item.replace('/', ''))) {
         log('success', `Properly ignoring: ${item}`);
       } else {
         log('info', `Consider ignoring: ${item}`);
@@ -427,13 +424,49 @@ function validateNpmConfiguration() {
   } else {
     log('info', '.npmignore not found - using .gitignore defaults');
   }
-
+  
+  // Check npm authentication setup
+  log('step', 'Checking npm authentication configuration...');
+  
+  // Check if user is currently logged in to npm
+  try {
+    execCommand('npm whoami', 'Check npm authentication');
+    log('success', 'npm authentication is configured locally');
+  } catch (error) {
+    log('warning', 'npm authentication not configured locally');
+    log('info', 'This is expected in CI/CD environments where NPM_TOKEN secret is used');
+  }
+  
+  // Check GitHub workflow for NPM_TOKEN usage
+  const workflowPath = path.join(rootDir, '.github/workflows/build-and-publish.yml');
+  if (fs.existsSync(workflowPath)) {
+    const workflowContent = fs.readFileSync(workflowPath, 'utf8');
+    
+    if (workflowContent.includes('NPM_TOKEN') && workflowContent.includes('NODE_AUTH_TOKEN')) {
+      log('success', 'GitHub workflow configured for npm authentication');
+    } else {
+      log('warning', 'GitHub workflow may not be properly configured for npm publishing');
+      log('info', 'Ensure NPM_TOKEN secret is set and used in workflow');
+    }
+    
+    // Check for proper authentication setup
+    if (workflowContent.includes('npm whoami')) {
+      log('success', 'Workflow includes npm authentication verification');
+    } else {
+      log('info', 'Consider adding npm authentication verification to workflow');
+    }
+  }
+  
+  // Provide setup guidance
+  log('info', 'For automated publishing, ensure:');
+  console.log('  1. NPM_TOKEN secret is set in GitHub repository settings');
+  console.log('  2. Token has "Automation" scope from npmjs.com');
+  console.log('  3. You have publish permissions for the package');
+  console.log('  4. See NPM_AUTHENTICATION_SETUP.md for detailed instructions');
+  
   // Validate package files would be included
   try {
-    const packageFiles = execCommand(
-      'npm pack --dry-run 2>/dev/null | grep -v "npm notice" | grep -v "^$" || true',
-      'Simulate npm pack',
-    );
+    const packageFiles = execCommand('npm pack --dry-run 2>/dev/null | grep -v "npm notice" | grep -v "^$" || true', 'Simulate npm pack');
     if (packageFiles) {
       log('success', 'Package files simulation completed');
       console.log('Files that would be published:');
