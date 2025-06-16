@@ -7,25 +7,25 @@
  * everything works correctly before pushing to the repository.
  */
 
-import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootDir = path.join(__dirname, '..');
+const rootDir = path.join(__dirname, "..");
 
 // Colors for console output
 const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
 };
 
 function colorize(color, text) {
@@ -35,33 +35,33 @@ function colorize(color, text) {
 function log(level, message) {
   const timestamp = new Date().toISOString();
   const prefix = {
-    info: colorize('blue', 'i  INFO'),
-    success: colorize('green', '✅ SUCCESS'),
-    error: colorize('red', '❌ ERROR'),
-    warning: colorize('yellow', '!  WARNING'),
-    step: colorize('cyan', '🔄 STEP'),
+    info: colorize("blue", "ℹ️  INFO"),
+    success: colorize("green", "✅ SUCCESS"),
+    error: colorize("red", "❌ ERROR"),
+    warning: colorize("yellow", "⚠️  WARNING"),
+    step: colorize("cyan", "🔄 STEP"),
   };
 
   console.log(`${prefix[level]} [${timestamp}] ${message}`);
 }
 
 function execCommand(command, description) {
-  log('step', `${description}: ${command}`);
+  log("step", `${description}: ${command}`);
   try {
     const output = execSync(command, {
       cwd: rootDir,
-      encoding: 'utf8',
-      stdio: 'pipe',
+      encoding: "utf8",
+      stdio: "pipe",
     });
-    log('success', `${description} completed`);
+    log("success", `${description} completed`);
     return output;
   } catch (error) {
-    log('error', `${description} failed: ${error.message}`);
+    log("error", `${description} failed: ${error.message}`);
     if (error.stdout) {
-      console.log('STDOUT:', error.stdout);
+      console.log("STDOUT:", error.stdout);
     }
     if (error.stderr) {
-      console.log('STDERR:', error.stderr);
+      console.log("STDERR:", error.stderr);
     }
     throw error;
   }
@@ -72,34 +72,34 @@ function checkFile(filePath, description) {
   if (fs.existsSync(fullPath)) {
     const stats = fs.statSync(fullPath);
     const sizeKB = (stats.size / 1024).toFixed(2);
-    log('success', `${description} exists (${sizeKB} KB)`);
+    log("success", `${description} exists (${sizeKB} KB)`);
     return true;
   } else {
-    log('error', `${description} not found at ${filePath}`);
+    log("error", `${description} not found at ${filePath}`);
     return false;
   }
 }
 
 function validatePackageJson() {
-  log('step', 'Validating package.json configuration...');
+  log("step", "Validating package.json configuration...");
 
-  const packagePath = path.join(rootDir, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+  const packagePath = path.join(rootDir, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 
-  const requiredFields = ['name', 'version', 'main', 'browser', 'exports'];
-  const requiredScripts = ['build', 'test', 'prepublishOnly'];
+  const requiredFields = ["name", "version", "main", "browser", "exports"];
+  const requiredScripts = ["build", "test", "prepublishOnly"];
 
   let valid = true;
 
   // Check required fields
   for (const field of requiredFields) {
     if (!packageJson[field]) {
-      log('error', `Missing required field: ${field}`);
+      log("error", `Missing required field: ${field}`);
       valid = false;
     } else {
       log(
-        'success',
-        `Field ${field}: ${typeof packageJson[field] === 'object' ? 'configured' : packageJson[field]}`,
+        "success",
+        `Field ${field}: ${typeof packageJson[field] === "object" ? "configured" : packageJson[field]}`,
       );
     }
   }
@@ -107,38 +107,38 @@ function validatePackageJson() {
   // Check required scripts
   for (const script of requiredScripts) {
     if (!packageJson.scripts[script]) {
-      log('error', `Missing required script: ${script}`);
+      log("error", `Missing required script: ${script}`);
       valid = false;
     } else {
-      log('success', `Script ${script}: ${packageJson.scripts[script]}`);
+      log("success", `Script ${script}: ${packageJson.scripts[script]}`);
     }
   }
 
   // Check exports configuration
-  if (packageJson.exports?.['.']) {
-    const exports = packageJson.exports['.'];
+  if (packageJson.exports?.["."]) {
+    const exports = packageJson.exports["."];
     if (exports.browser && exports.node) {
-      log('success', 'Browser/Node.js exports properly configured');
+      log("success", "Browser/Node.js exports properly configured");
     } else {
-      log('warning', 'Exports configuration may be incomplete');
+      log("warning", "Exports configuration may be incomplete");
     }
   }
 
   if (!valid) {
-    throw new Error('package.json validation failed');
+    throw new Error("package.json validation failed");
   }
 
   return packageJson;
 }
 
 function validateBuildSystem() {
-  log('step', 'Validating build system...');
+  log("step", "Validating build system...");
 
   // Check build scripts exist
   const buildScripts = [
-    'scripts/build-browser.js',
-    'scripts/build-esbuild.js',
-    'scripts/build-browser-advanced.js',
+    "scripts/build-browser.js",
+    "scripts/build-esbuild.js",
+    "scripts/build-browser-advanced.js",
   ];
 
   for (const script of buildScripts) {
@@ -146,12 +146,12 @@ function validateBuildSystem() {
   }
 
   // Test clean build
-  log('step', 'Testing clean build process...');
-  execCommand('npm run clean', 'Clean previous builds');
-  execCommand('npm run build', 'Build browser bundle');
+  log("step", "Testing clean build process...");
+  execCommand("npm run clean", "Clean previous builds");
+  execCommand("npm run build", "Build browser bundle");
 
   // Validate build outputs
-  const requiredOutputs = ['dist/codi.browser.js', 'dist/codi.browser.js.map'];
+  const requiredOutputs = ["dist/codi.browser.js", "dist/codi.browser.js.map"];
 
   for (const output of requiredOutputs) {
     if (!checkFile(output, `Build output: ${output}`)) {
@@ -160,79 +160,79 @@ function validateBuildSystem() {
   }
 
   // Check bundle content
-  const bundlePath = path.join(rootDir, 'dist/codi.browser.js');
-  const bundleContent = fs.readFileSync(bundlePath, 'utf8');
+  const bundlePath = path.join(rootDir, "dist/codi.browser.js");
+  const bundleContent = fs.readFileSync(bundlePath, "utf8");
 
   const requiredInBundle = [
-    'codi',
-    'describe',
-    'it',
-    'assertEqual',
-    'assertTrue',
-    'assertFalse',
+    "codi",
+    "describe",
+    "it",
+    "assertEqual",
+    "assertTrue",
+    "assertFalse",
   ];
 
   for (const required of requiredInBundle) {
     if (!bundleContent.includes(required)) {
-      log('error', `Bundle missing required content: ${required}`);
-      throw new Error('Bundle validation failed');
+      log("error", `Bundle missing required content: ${required}`);
+      throw new Error("Bundle validation failed");
     }
   }
 
-  log('success', 'Bundle content validation passed');
+  log("success", "Bundle content validation passed");
 }
 
 function validateTestSystem() {
-  log('step', 'Validating test system...');
+  log("step", "Validating test system...");
 
   // Run Node.js tests
-  execCommand('node cli.js tests --returnResults', 'Node.js tests');
+  execCommand("node cli.js tests --returnResults", "Node.js tests");
 
   // Check if Chrome is available for browser tests
   try {
     execCommand(
-      'which google-chrome || which google-chrome-stable || which chromium-browser',
-      'Check Chrome availability',
+      "which google-chrome || which google-chrome-stable || which chromium-browser",
+      "Check Chrome availability",
     );
 
     // Run browser tests
-    execCommand('npm run test:browser', 'Browser tests');
-    log('success', 'Browser tests completed successfully');
+    execCommand("npm run test:browser", "Browser tests");
+    log("success", "Browser tests completed successfully");
   } catch (error) {
     log(
-      'warning',
-      'Chrome not available for browser tests - this is expected in some environments',
+      "warning",
+      "Chrome not available for browser tests - this is expected in some environments",
     );
-    log('info', 'Browser tests will be skipped in this validation');
+    log("info", "Browser tests will be skipped in this validation");
   }
 }
 
 function validateBrowserCompatibility() {
-  log('step', 'Validating browser compatibility...');
+  log("step", "Validating browser compatibility...");
 
-  const bundlePath = path.join(rootDir, 'dist/codi.browser.js');
-  const bundleContent = fs.readFileSync(bundlePath, 'utf8');
+  const bundlePath = path.join(rootDir, "dist/codi.browser.js");
+  const bundleContent = fs.readFileSync(bundlePath, "utf8");
 
   // Check for Node.js-specific imports that shouldn't be in browser bundle
   const nodeOnlyPatterns = [
-    'require\\s*\\(',
-    'module\\.exports',
-    'process\\.',
-    '__dirname',
-    '__filename',
-    'fs\\.',
-    'path\\.',
-    'os\\.',
+    "require\\s*\\(",
+    "module\\.exports",
+    "process\\.",
+    "__dirname",
+    "__filename",
+    "fs\\.",
+    "path\\.",
+    "os\\.",
   ];
 
   let browserCompatible = true;
 
   for (const pattern of nodeOnlyPatterns) {
-    const regex = new RegExp(pattern, 'g');
+    const regex = new RegExp(pattern, "g");
     const matches = bundleContent.match(regex);
     if (matches && matches.length > 0) {
       log(
-        'warning',
+        "warning",
         `Potential Node.js-specific code found: ${pattern} (${matches.length} occurrences)`,
       );
       // Don't fail on this, as some patterns might be in comments or strings
@@ -241,78 +241,78 @@ function validateBrowserCompatibility() {
 
   // Check for proper IIFE structure (including modern arrow function IIFEs)
   const iifePatterns = [
-    '(function(',
-    '(function()',
-    'var codi = (() => {',
-    'let codi = (() => {',
-    'const codi = (() => {',
+    "(function(",
+    "(function()",
+    "var codi = (() => {",
+    "let codi = (() => {",
+    "const codi = (() => {",
   ];
 
   const hasIIFE = iifePatterns.some((pattern) =>
     bundleContent.includes(pattern),
   );
   if (!hasIIFE) {
-    log('error', 'Bundle does not appear to be in IIFE format');
+    log("error", "Bundle does not appear to be in IIFE format");
     browserCompatible = false;
   } else {
-    log('success', 'Bundle is properly formatted as IIFE');
+    log("success", "Bundle is properly formatted as IIFE");
   }
 
   // Check for global exports
-  if (!bundleContent.includes('global') && !bundleContent.includes('window')) {
-    log('warning', 'Bundle may not properly expose global variables');
+  if (!bundleContent.includes("global") && !bundleContent.includes("window")) {
+    log("warning", "Bundle may not properly expose global variables");
   }
 
   if (browserCompatible) {
-    log('success', 'Browser compatibility validation passed');
+    log("success", "Browser compatibility validation passed");
   } else {
-    throw new Error('Browser compatibility validation failed');
+    throw new Error("Browser compatibility validation failed");
   }
 }
 
 function validatePuppeteerCompatibility() {
-  log('step', 'Validating Puppeteer method compatibility...');
+  log("step", "Validating Puppeteer method compatibility...");
 
   // Check workflow files for deprecated Puppeteer methods
   const workflowPath = path.join(
     rootDir,
-    '.github/workflows/build-and-publish.yml',
+    ".github/workflows/build-and-publish.yml",
   );
   if (fs.existsSync(workflowPath)) {
-    const workflowContent = fs.readFileSync(workflowPath, 'utf8');
+    const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
     // Check for deprecated methods
-    const deprecatedMethods = ['page.waitForTimeout', 'waitForTimeout'];
+    const deprecatedMethods = ["page.waitForTimeout", "waitForTimeout"];
 
     let hasDeprecated = false;
     for (const method of deprecatedMethods) {
       if (workflowContent.includes(method)) {
-        log('error', `Deprecated Puppeteer method found: ${method}`);
+        log("error", `Deprecated Puppeteer method found: ${method}`);
         hasDeprecated = true;
       }
     }
 
     if (!hasDeprecated) {
-      log('success', 'No deprecated Puppeteer methods found in workflow');
+      log("success", "No deprecated Puppeteer methods found in workflow");
     } else {
       throw new Error(
-        'Deprecated Puppeteer methods found - these will cause CI failures',
+        "Deprecated Puppeteer methods found - these will cause CI failures",
       );
     }
   }
 
   // Check browser runner for deprecated methods
-  const browserRunnerPath = path.join(rootDir, 'src/runners/browserRunner.js');
+  const browserRunnerPath = path.join(rootDir, "src/runners/browserRunner.js");
   if (fs.existsSync(browserRunnerPath)) {
-    const runnerContent = fs.readFileSync(browserRunnerPath, 'utf8');
+    const runnerContent = fs.readFileSync(browserRunnerPath, "utf8");
 
-    const deprecatedMethods = ['page.waitForTimeout', 'waitForTimeout'];
+    const deprecatedMethods = ["page.waitForTimeout", "waitForTimeout"];
 
     let hasDeprecated = false;
     for (const method of deprecatedMethods) {
       if (runnerContent.includes(method)) {
         log(
-          'error',
+          "error",
           `Deprecated Puppeteer method found in browser runner: ${method}`,
         );
         hasDeprecated = true;
@@ -320,21 +320,21 @@ function validatePuppeteerCompatibility() {
     }
 
     if (!hasDeprecated) {
-      log('success', 'No deprecated Puppeteer methods found in browser runner');
+      log("success", "No deprecated Puppeteer methods found in browser runner");
     } else {
-      throw new Error('Deprecated Puppeteer methods found in browser runner');
+      throw new Error("Deprecated Puppeteer methods found in browser runner");
     }
   }
 
-  log('success', 'Puppeteer compatibility validation passed');
+  log("success", "Puppeteer compatibility validation passed");
 }
 
 function validateWorkflowFiles() {
-  log('step', 'Validating GitHub Actions workflow files...');
+  log("step", "Validating GitHub Actions workflow files...");
 
   const workflowFiles = [
-    '.github/workflows/build-and-publish.yml',
-    '.github/workflows/unit_tests.yml',
+    ".github/workflows/build-and-publish.yml",
+    ".github/workflows/unit_tests.yml",
   ];
 
   for (const workflow of workflowFiles) {
@@ -342,15 +342,15 @@ function validateWorkflowFiles() {
       // Basic YAML syntax check
       const workflowContent = fs.readFileSync(
         path.join(rootDir, workflow),
-        'utf8',
+        "utf8",
       );
 
       // Check for required workflow elements
-      if (workflow.includes('build-and-publish')) {
-        const requiredSections = ['build:', 'publish:', 'jobs:'];
+      if (workflow.includes("build-and-publish")) {
+        const requiredSections = ["build:", "publish:", "jobs:"];
         for (const section of requiredSections) {
           if (!workflowContent.includes(section)) {
-            log('warning', `Workflow ${workflow} missing section: ${section}`);
+            log("warning", `Workflow ${workflow} missing section: ${section}`);
           }
         }
       }
@@ -358,53 +358,67 @@ function validateWorkflowFiles() {
   }
 }
 
+function validateDocumentation() {
+  log("step", "Validating documentation...");
+
+  const docFiles = [
+    "README.md",
+    "AUTOMATED_BUILDS_AND_PUBLISHING.md",
+    "BROWSER_TESTING.md",
+  ];
+
+  for (const doc of docFiles) {
+    checkFile(doc, `Documentation: ${doc}`);
+  }
+}
+
 function simulateVersionCalculation() {
-  log('step', 'Simulating version calculation logic...');
+  log("step", "Simulating version calculation logic...");
 
   const packageJson = JSON.parse(
-    fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'),
+    fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
   );
   const currentVersion = packageJson.version;
 
-  log('info', `Current version: ${currentVersion}`);
+  log("info", `Current version: ${currentVersion}`);
 
   // Simulate different version scenarios based on current version
   const scenarios = [];
 
-  if (currentVersion.includes('-beta')) {
+  if (currentVersion.includes("-beta")) {
     scenarios.push({
-      type: 'beta',
+      type: "beta",
       expected: currentVersion,
-      note: '(already beta - no suffix added)',
+      note: "(already beta - no suffix added)",
     });
   } else {
-    scenarios.push({ type: 'beta', expected: `${currentVersion}-beta.1` });
+    scenarios.push({ type: "beta", expected: `${currentVersion}-beta.1` });
   }
 
-  if (currentVersion.includes('-alpha')) {
+  if (currentVersion.includes("-alpha")) {
     scenarios.push({
-      type: 'alpha',
+      type: "alpha",
       expected: currentVersion,
-      note: '(already alpha - no suffix added)',
+      note: "(already alpha - no suffix added)",
     });
   } else {
-    scenarios.push({ type: 'alpha', expected: `${currentVersion}-alpha.1` });
+    scenarios.push({ type: "alpha", expected: `${currentVersion}-alpha.1` });
   }
 
-  if (currentVersion.includes('-rc')) {
+  if (currentVersion.includes("-rc")) {
     scenarios.push({
-      type: 'rc',
+      type: "rc",
       expected: currentVersion,
-      note: '(already rc - no suffix added)',
+      note: "(already rc - no suffix added)",
     });
   } else {
-    scenarios.push({ type: 'rc', expected: `${currentVersion}-rc.1` });
+    scenarios.push({ type: "rc", expected: `${currentVersion}-rc.1` });
   }
 
   for (const scenario of scenarios) {
-    const note = scenario.note || '';
+    const note = scenario.note || "";
     log(
-      'info',
+      "info",
       `${scenario.type} version would be: ${scenario.expected} ${note}`,
     );
   }
@@ -412,147 +426,147 @@ function simulateVersionCalculation() {
   // Simulate commit count for auto-beta (following workflow logic)
   try {
     const commitCount = execCommand(
-      'git rev-list --count HEAD',
-      'Get commit count',
+      "git rev-list --count HEAD",
+      "Get commit count",
     ).trim();
 
     let autoBetaVersion;
-    if (currentVersion.includes('-beta')) {
+    if (currentVersion.includes("-beta")) {
       autoBetaVersion = currentVersion; // Use as-is if already beta
       log(
-        'info',
+        "info",
         `Auto-beta version would be: ${autoBetaVersion} (already beta - no change)`,
       );
-    } else if (currentVersion.includes('-alpha')) {
+    } else if (currentVersion.includes("-alpha")) {
       autoBetaVersion = currentVersion; // Use as-is if already alpha
       log(
-        'info',
+        "info",
         `Auto-beta version would be: ${autoBetaVersion} (already alpha - no change)`,
       );
-    } else if (currentVersion.includes('-rc')) {
+    } else if (currentVersion.includes("-rc")) {
       autoBetaVersion = currentVersion; // Use as-is if already rc
       log(
-        'info',
+        "info",
         `Auto-beta version would be: ${autoBetaVersion} (already rc - no change)`,
       );
     } else {
       autoBetaVersion = `${currentVersion}-beta.${commitCount}`;
-      log('info', `Auto-beta version would be: ${autoBetaVersion}`);
+      log("info", `Auto-beta version would be: ${autoBetaVersion}`);
     }
   } catch (error) {
     log(
-      'warning',
-      'Could not calculate commit count - not in a git repository',
+      "warning",
+      "Could not calculate commit count - not in a git repository",
     );
   }
 }
 
 function validateNpmConfiguration() {
-  log('step', 'Validating npm configuration...');
+  log("step", "Validating npm configuration...");
 
   // Check if .npmignore exists and is configured properly
-  const npmignorePath = path.join(rootDir, '.npmignore');
+  const npmignorePath = path.join(rootDir, ".npmignore");
   if (fs.existsSync(npmignorePath)) {
-    log('success', '.npmignore file exists');
-    const npmignoreContent = fs.readFileSync(npmignorePath, 'utf8');
+    log("success", ".npmignore file exists");
+    const npmignoreContent = fs.readFileSync(npmignorePath, "utf8");
 
-    const shouldIgnore = ['tests/', '*.test.js', '.github/', 'scripts/'];
-    const shouldInclude = ['dist/', 'src/', 'cli.js'];
+    const shouldIgnore = ["tests/", "*.test.js", ".github/", "scripts/"];
+    const shouldInclude = ["dist/", "src/", "cli.js"];
 
     for (const item of shouldIgnore) {
       if (
         npmignoreContent.includes(item) ||
-        npmignoreContent.includes(item.replace('/', ''))
+        npmignoreContent.includes(item.replace("/", ""))
       ) {
-        log('success', `Properly ignoring: ${item}`);
+        log("success", `Properly ignoring: ${item}`);
       } else {
-        log('info', `Consider ignoring: ${item}`);
+        log("info", `Consider ignoring: ${item}`);
       }
     }
   } else {
-    log('info', '.npmignore not found - using .gitignore defaults');
+    log("info", ".npmignore not found - using .gitignore defaults");
   }
 
   // Check npm authentication setup
-  log('step', 'Checking npm authentication configuration...');
+  log("step", "Checking npm authentication configuration...");
 
   // Check if user is currently logged in to npm
   try {
-    execCommand('npm whoami', 'Check npm authentication');
-    log('success', 'npm authentication is configured locally');
+    execCommand("npm whoami", "Check npm authentication");
+    log("success", "npm authentication is configured locally");
   } catch (error) {
-    log('warning', 'npm authentication not configured locally');
+    log("warning", "npm authentication not configured locally");
     log(
-      'info',
-      'This is expected in CI/CD environments where NPM_TOKEN secret is used',
+      "info",
+      "This is expected in CI/CD environments where NPM_TOKEN secret is used",
     );
   }
 
   // Check GitHub workflow for NPM_TOKEN usage
   const workflowPath = path.join(
     rootDir,
-    '.github/workflows/build-and-publish.yml',
+    ".github/workflows/build-and-publish.yml",
   );
   if (fs.existsSync(workflowPath)) {
-    const workflowContent = fs.readFileSync(workflowPath, 'utf8');
+    const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
     if (
-      workflowContent.includes('NPM_TOKEN') &&
-      workflowContent.includes('NODE_AUTH_TOKEN')
+      workflowContent.includes("NPM_TOKEN") &&
+      workflowContent.includes("NODE_AUTH_TOKEN")
     ) {
-      log('success', 'GitHub workflow configured for npm authentication');
+      log("success", "GitHub workflow configured for npm authentication");
     } else {
       log(
-        'warning',
-        'GitHub workflow may not be properly configured for npm publishing',
+        "warning",
+        "GitHub workflow may not be properly configured for npm publishing",
       );
-      log('info', 'Ensure NPM_TOKEN secret is set and used in workflow');
+      log("info", "Ensure NPM_TOKEN secret is set and used in workflow");
     }
 
     // Check for proper authentication setup
-    if (workflowContent.includes('npm whoami')) {
-      log('success', 'Workflow includes npm authentication verification');
+    if (workflowContent.includes("npm whoami")) {
+      log("success", "Workflow includes npm authentication verification");
     } else {
       log(
-        'info',
-        'Consider adding npm authentication verification to workflow',
+        "info",
+        "Consider adding npm authentication verification to workflow",
       );
     }
   }
 
   // Provide setup guidance
-  log('info', 'For automated publishing, ensure:');
-  console.log('  1. NPM_TOKEN secret is set in GitHub repository settings');
+  log("info", "For automated publishing, ensure:");
+  console.log("  1. NPM_TOKEN secret is set in GitHub repository settings");
   console.log('  2. Token has "Automation" scope from npmjs.com');
-  console.log('  3. You have publish permissions for the package');
-  console.log('  4. See NPM_AUTHENTICATION_SETUP.md for detailed instructions');
+  console.log("  3. You have publish permissions for the package");
+  console.log("  4. See NPM_AUTHENTICATION_SETUP.md for detailed instructions");
 
   // Validate package files would be included
   try {
     const packageFiles = execCommand(
       'npm pack --dry-run 2>/dev/null | grep -v "npm notice" | grep -v "^$" || true',
-      'Simulate npm pack',
+      "Simulate npm pack",
     );
     if (packageFiles) {
-      log('success', 'Package files simulation completed');
-      console.log('Files that would be published:');
+      log("success", "Package files simulation completed");
+      console.log("Files that would be published:");
       console.log(packageFiles);
     }
   } catch (error) {
-    log('warning', 'Could not simulate npm pack');
+    log("warning", "Could not simulate npm pack");
   }
 }
 
 function generateReport(results) {
-  log('step', 'Generating validation report...');
+  log("step", "Generating validation report...");
 
-  const reportPath = path.join(rootDir, 'validation-report.md');
+  const reportPath = path.join(rootDir, "validation-report.md");
   const timestamp = new Date().toISOString();
 
   let report = `# Automation Validation Report\n\n`;
   report += `**Generated:** ${timestamp}\n\n`;
   report += `## Summary\n\n`;
-  report += `- **Status:** ${results.success ? '✅ PASSED' : '❌ FAILED'}\n`;
+  report += `- **Status:** ${results.success ? "✅ PASSED" : "❌ FAILED"}\n`;
   report += `- **Total Checks:** ${results.totalChecks}\n`;
   report += `- **Passed:** ${results.passed}\n`;
   report += `- **Failed:** ${results.failed}\n`;
@@ -572,16 +586,16 @@ function generateReport(results) {
   }
 
   report += `## Detailed Results\n\n`;
-  report += results.details.join('\n');
+  report += results.details.join("\n");
 
   fs.writeFileSync(reportPath, report);
-  log('success', `Validation report saved to: ${reportPath}`);
+  log("success", `Validation report saved to: ${reportPath}`);
 }
 
 async function main() {
-  console.log(colorize('bright', '\n🚀 Codi Automation Validation Script\n'));
+  console.log(colorize("bright", "\n🚀 Codi Automation Validation Script\n"));
   console.log(
-    'This script validates the automated build and publish workflow locally.\n',
+    "This script validates the automated build and publish workflow locally.\n",
   );
 
   const results = {
@@ -594,62 +608,63 @@ async function main() {
   };
 
   const validationSteps = [
-    { name: 'Package Configuration', fn: validatePackageJson },
-    { name: 'Build System', fn: validateBuildSystem },
-    { name: 'Test System', fn: validateTestSystem },
-    { name: 'Browser Compatibility', fn: validateBrowserCompatibility },
-    { name: 'Puppeteer Compatibility', fn: validatePuppeteerCompatibility },
-    { name: 'Workflow Files', fn: validateWorkflowFiles },
-    { name: 'Version Calculation', fn: simulateVersionCalculation },
-    { name: 'NPM Configuration', fn: validateNpmConfiguration },
+    { name: "Package Configuration", fn: validatePackageJson },
+    { name: "Build System", fn: validateBuildSystem },
+    { name: "Test System", fn: validateTestSystem },
+    { name: "Browser Compatibility", fn: validateBrowserCompatibility },
+    { name: "Puppeteer Compatibility", fn: validatePuppeteerCompatibility },
+    { name: "Workflow Files", fn: validateWorkflowFiles },
+    { name: "Documentation", fn: validateDocumentation },
+    { name: "Version Calculation", fn: simulateVersionCalculation },
+    { name: "NPM Configuration", fn: validateNpmConfiguration },
   ];
 
   for (const step of validationSteps) {
     try {
-      console.log(colorize('bright', `\n=== ${step.name} ===`));
+      console.log(colorize("bright", `\n=== ${step.name} ===`));
       results.totalChecks++;
 
       await step.fn();
 
       results.passed++;
       results.details.push(`- ✅ ${step.name}: PASSED`);
-      log('success', `${step.name} validation completed`);
+      log("success", `${step.name} validation completed`);
     } catch (error) {
       results.failed++;
       results.success = false;
       results.details.push(`- ❌ ${step.name}: FAILED - ${error.message}`);
-      log('error', `${step.name} validation failed: ${error.message}`);
+      log("error", `${step.name} validation failed: ${error.message}`);
     }
   }
 
-  console.log(colorize('bright', '\n=== Validation Complete ==='));
+  console.log(colorize("bright", "\n=== Validation Complete ==="));
 
   if (results.success) {
-    console.log(colorize('green', '\n🎉 All validations passed!'));
+    console.log(colorize("green", "\n🎉 All validations passed!"));
     console.log(
       colorize(
-        'green',
-        'Your automated build and publish workflow is ready to use.',
+        "green",
+        "Your automated build and publish workflow is ready to use.",
       ),
     );
 
-    console.log(colorize('cyan', '\n📖 Usage Examples:'));
-    console.log('• Push to main branch: Triggers automatic beta publish');
-    console.log('• Create git tag v1.0.40: Triggers stable release');
+    console.log(colorize("cyan", "\n📖 Usage Examples:"));
+    console.log("• Push to main branch: Triggers automatic beta publish");
+    console.log("• Create git tag v1.0.40: Triggers stable release");
     console.log(
-      '• Manual workflow dispatch: Choose publish type (alpha/beta/rc/latest)',
+      "• Manual workflow dispatch: Choose publish type (alpha/beta/rc/latest)",
     );
 
-    console.log(colorize('cyan', '\n🔗 Resources:'));
-    console.log('• Workflow file: .github/workflows/build-and-publish.yml');
-    console.log('• Documentation: AUTOMATED_BUILDS_AND_PUBLISHING.md');
-    console.log('• Test page: test-browser-import.html');
+    console.log(colorize("cyan", "\n🔗 Resources:"));
+    console.log("• Workflow file: .github/workflows/build-and-publish.yml");
+    console.log("• Documentation: AUTOMATED_BUILDS_AND_PUBLISHING.md");
+    console.log("• Test page: test-browser-import.html");
   } else {
-    console.log(colorize('red', '\n❌ Validation failed!'));
+    console.log(colorize("red", "\n❌ Validation failed!"));
     console.log(
       colorize(
-        'red',
-        'Please address the issues above before using the automated workflow.',
+        "red",
+        "Please address the issues above before using the automated workflow.",
       ),
     );
   }
@@ -657,29 +672,29 @@ async function main() {
   // Generate detailed report
   generateReport(results);
 
-  console.log(colorize('blue', '\n📊 Summary:'));
+  console.log(colorize("blue", "\n📊 Summary:"));
   console.log(`Total checks: ${results.totalChecks}`);
-  console.log(`Passed: ${colorize('green', results.passed)}`);
-  console.log(`Failed: ${colorize('red', results.failed)}`);
-  console.log(`Warnings: ${colorize('yellow', results.warnings)}`);
+  console.log(`Passed: ${colorize("green", results.passed)}`);
+  console.log(`Failed: ${colorize("red", results.failed)}`);
+  console.log(`Warnings: ${colorize("yellow", results.warnings)}`);
 
   process.exit(results.success ? 0 : 1);
 }
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  log('error', `Unhandled Rejection at: ${promise}, reason: ${reason}`);
+process.on("unhandledRejection", (reason, promise) => {
+  log("error", `Unhandled Rejection at: ${promise}, reason: ${reason}`);
   process.exit(1);
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  log('error', `Uncaught Exception: ${error.message}`);
+process.on("uncaughtException", (error) => {
+  log("error", `Uncaught Exception: ${error.message}`);
   process.exit(1);
 });
 
 // Run the validation
 main().catch((error) => {
-  log('error', `Validation script failed: ${error.message}`);
+  log("error", `Validation script failed: ${error.message}`);
   process.exit(1);
 });
