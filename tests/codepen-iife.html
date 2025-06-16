@@ -12,18 +12,18 @@
             padding: 20px;
             margin: 0;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         h1 {
             color: #4CAF50;
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .test-output {
             background: #000;
             padding: 20px;
@@ -34,7 +34,7 @@
             overflow-y: auto;
             max-height: 600px;
         }
-        
+
         .status {
             padding: 10px;
             margin: 10px 0;
@@ -42,30 +42,30 @@
             text-align: center;
             font-weight: bold;
         }
-        
+
         .status.running {
             background: #fff3cd;
             color: #856404;
             border: 1px solid #ffeaa7;
         }
-        
+
         .status.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
+
         .status.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
+
         .controls {
             margin: 20px 0;
             text-align: center;
         }
-        
+
         button {
             background: #007bff;
             color: white;
@@ -76,11 +76,11 @@
             font-size: 16px;
             margin: 0 10px;
         }
-        
+
         button:hover {
             background: #0056b3;
         }
-        
+
         button:disabled {
             background: #6c757d;
             cursor: not-allowed;
@@ -110,7 +110,7 @@
     <script>
         // Test results storage
         let testResults = null;
-        
+
         // Setup console redirection
         function setupConsoleRedirect() {
             const output = document.getElementById('test-output');
@@ -120,56 +120,56 @@
                 warn: console.warn,
                 info: console.info
             };
-            
+
             function createLogger(type, color) {
                 return function(...args) {
-                    const message = args.map(arg => 
+                    const message = args.map(arg =>
                         typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
                     ).join(' ');
-                    
+
                     const timestamp = new Date().toLocaleTimeString();
                     const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
-                    
+
                     // Add to output
                     const span = document.createElement('span');
                     span.style.color = color;
                     span.textContent = logEntry;
                     output.appendChild(span);
-                    
+
                     // Auto-scroll to bottom
                     output.scrollTop = output.scrollHeight;
-                    
+
                     // Call original
                     originalConsole[type](...args);
                 };
             }
-            
+
             console.log = createLogger('log', '#ffffff');
             console.error = createLogger('error', '#ff6b6b');
             console.warn = createLogger('warn', '#ffa726');
             console.info = createLogger('info', '#42a5f5');
         }
-        
+
         function updateStatus(message, type = 'running') {
             const status = document.getElementById('status');
             status.textContent = message;
             status.className = `status ${type}`;
         }
-        
+
         function clearOutput() {
             document.getElementById('test-output').innerHTML = '';
         }
-        
+
         function downloadResults() {
             if (!testResults) {
                 alert('No test results available. Run tests first.');
                 return;
             }
-            
+
             const data = JSON.stringify(testResults, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
+
             const a = document.createElement('a');
             a.href = url;
             a.download = `codi-test-results-${new Date().getTime()}.json`;
@@ -178,12 +178,12 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-        
+
         // Simulate delay for demonstration
         function simulateDelay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-        
+
         // Sequential setup tests
         async function setupTests() {
             describe({ name: 'Setup Tests', id: 'setup' }, async () => {
@@ -319,7 +319,7 @@
                     const data = Array.from({ length: 10000 }, (_, i) => ({ id: i, value: Math.random() }));
                     const filtered = data.filter(item => item.value > 0.5);
                     const endTime = performance.now();
-                    
+
                     assertTrue(filtered.length > 0, 'Should process large dataset');
                     assertTrue(endTime - startTime < 1000, 'Should complete within reasonable time');
                     console.log(`✅ Performance test passed (${(endTime - startTime).toFixed(2)}ms)`);
@@ -331,22 +331,22 @@
         async function runAllTests() {
             const runButton = document.getElementById('runTests');
             runButton.disabled = true;
-            
+
             try {
                 updateStatus('Clearing previous results...', 'running');
                 clearOutput();
-                
+
                 console.log('🐶 Starting Codi browser tests...');
                 console.log('Framework version:', codi.version);
                 console.log('═'.repeat(50));
-                
+
                 updateStatus('Running test suites...', 'running');
-                
+
                 // Execute test function
                 testResults = await codi.runWebTestFunction(async () => {
                     // Sequential setup tests
                     await setupTests();
-                    
+
                     // Parallel test batches
                     console.log('\n🚀 Running parallel test batches...');
                     await Promise.all([
@@ -355,26 +355,26 @@
                         batchThree(),
                         batchFour()
                     ]);
-                    
+
                     // Performance tests
                     console.log('\n⚡ Running performance tests...');
                     await performanceTests();
-                    
+
                 }, {
                     quiet: false,
                     showSummary: true
                 });
-                
+
                 console.log('═'.repeat(50));
                 console.log('🎉 All tests completed!');
-                
+
                 // Update status based on results
                 if (testResults.failedTests === 0) {
                     updateStatus(`✅ All ${testResults.passedTests} tests passed!`, 'success');
                 } else {
                     updateStatus(`❌ ${testResults.failedTests} tests failed, ${testResults.passedTests} passed`, 'error');
                 }
-                
+
             } catch (error) {
                 console.error('💥 Test execution failed:', error);
                 updateStatus('Test execution failed', 'error');
@@ -382,22 +382,22 @@
                 runButton.disabled = false;
             }
         }
-        
+
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', () => {
             setupConsoleRedirect();
-            
+
             if (typeof codi === 'undefined') {
                 updateStatus('❌ Codi framework failed to load', 'error');
                 console.error('Codi framework is not available');
                 return;
             }
-            
+
             updateStatus('✅ Codi framework loaded successfully', 'success');
             console.log('🐶 Codi framework loaded successfully!');
             console.log('Available functions:', Object.keys(codi));
             console.log('Ready to run tests. Click "Run Tests" to begin.');
-            
+
             // Auto-run tests after a short delay
             setTimeout(() => {
                 console.log('\n🔄 Auto-running tests in 2 seconds...');
