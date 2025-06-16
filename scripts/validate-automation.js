@@ -209,10 +209,10 @@ function validateTestSystem() {
 
 function validateBrowserCompatibility() {
   log('step', 'Validating browser compatibility...');
-
+  
   const bundlePath = path.join(rootDir, 'dist/codi.browser.js');
   const bundleContent = fs.readFileSync(bundlePath, 'utf8');
-
+  
   // Check for Node.js-specific imports that shouldn't be in browser bundle
   const nodeOnlyPatterns = [
     'require\\s*\\(',
@@ -222,52 +222,104 @@ function validateBrowserCompatibility() {
     '__filename',
     'fs\\.',
     'path\\.',
-    'os\\.',
+    'os\\.'
   ];
-
+  
   let browserCompatible = true;
-
+  
   for (const pattern of nodeOnlyPatterns) {
     const regex = new RegExp(pattern, 'g');
     const matches = bundleContent.match(regex);
     if (matches && matches.length > 0) {
-      log(
-        'warning',
-        `Potential Node.js-specific code found: ${pattern} (${matches.length} occurrences)`,
-      );
+      log('warning', `Potential Node.js-specific code found: ${pattern} (${matches.length} occurrences)`);
       // Don't fail on this, as some patterns might be in comments or strings
     }
   }
-
+  
   // Check for proper IIFE structure (including modern arrow function IIFEs)
   const iifePatterns = [
     '(function(',
     '(function()',
     'var codi = (() => {',
     'let codi = (() => {',
-    'const codi = (() => {',
+    'const codi = (() => {'
   ];
-
-  const hasIIFE = iifePatterns.some((pattern) =>
-    bundleContent.includes(pattern),
-  );
+  
+  const hasIIFE = iifePatterns.some(pattern => bundleContent.includes(pattern));
   if (!hasIIFE) {
     log('error', 'Bundle does not appear to be in IIFE format');
     browserCompatible = false;
   } else {
     log('success', 'Bundle is properly formatted as IIFE');
   }
-
+  
   // Check for global exports
   if (!bundleContent.includes('global') && !bundleContent.includes('window')) {
     log('warning', 'Bundle may not properly expose global variables');
   }
-
+  
   if (browserCompatible) {
     log('success', 'Browser compatibility validation passed');
   } else {
     throw new Error('Browser compatibility validation failed');
   }
+}
+
+function validatePuppeteerCompatibility() {
+  log('step', 'Validating Puppeteer method compatibility...');
+  
+  // Check workflow files for deprecated Puppeteer methods
+  const workflowPath = path.join(rootDir, '.github/workflows/build-and-publish.yml');
+  if (fs.existsSync(workflowPath)) {
+    const workflowContent = fs.readFileSync(workflowPath, 'utf8');
+    
+    // Check for deprecated methods
+    const deprecatedMethods = [
+      'page.waitForTimeout',
+      'waitForTimeout'
+    ];
+    
+    let hasDeprecated = false;
+    for (const method of deprecatedMethods) {
+      if (workflowContent.includes(method)) {
+        log('error', `Deprecated Puppeteer method found: ${method}`);
+        hasDeprecated = true;
+      }
+    }
+    
+    if (!hasDeprecated) {
+      log('success', 'No deprecated Puppeteer methods found in workflow');
+    } else {
+      throw new Error('Deprecated Puppeteer methods found - these will cause CI failures');
+    }
+  }
+  
+  // Check browser runner for deprecated methods
+  const browserRunnerPath = path.join(rootDir, 'src/runners/browserRunner.js');
+  if (fs.existsSync(browserRunnerPath)) {
+    const runnerContent = fs.readFileSync(browserRunnerPath, 'utf8');
+    
+    const deprecatedMethods = [
+      'page.waitForTimeout',
+      'waitForTimeout'
+    ];
+    
+    let hasDeprecated = false;
+    for (const method of deprecatedMethods) {
+      if (runnerContent.includes(method)) {
+        log('error', `Deprecated Puppeteer method found in browser runner: ${method}`);
+        hasDeprecated = true;
+      }
+    }
+    
+    if (!hasDeprecated) {
+      log('success', 'No deprecated Puppeteer methods found in browser runner');
+    } else {
+      throw new Error('Deprecated Puppeteer methods found in browser runner');
+    }
+  }
+  
+  log('success', 'Puppeteer compatibility validation passed');
 }
 
 function validateWorkflowFiles() {
@@ -447,10 +499,11 @@ async function main() {
     { name: 'Build System', fn: validateBuildSystem },
     { name: 'Test System', fn: validateTestSystem },
     { name: 'Browser Compatibility', fn: validateBrowserCompatibility },
+    { name: 'Puppeteer Compatibility', fn: validatePuppeteerCompatibility },
     { name: 'Workflow Files', fn: validateWorkflowFiles },
     { name: 'Documentation', fn: validateDocumentation },
     { name: 'Version Calculation', fn: simulateVersionCalculation },
-    { name: 'NPM Configuration', fn: validateNpmConfiguration },
+    { name: 'NPM Configuration', fn: validateNpmConfiguration }
   ];
 
   for (const step of validationSteps) {

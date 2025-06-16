@@ -1,7 +1,7 @@
 /**
  * Codi Test Framework - Browser Bundle
- * Version: v1.0.39
- * Generated: 2025-06-16T11:08:07.094Z
+ * Version: v1.0.39-beta
+ * Generated: 2025-06-16T13:35:27.246Z
  * Build tool: esbuild
  * 
  * @license MIT

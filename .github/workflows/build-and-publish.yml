@@ -253,8 +253,18 @@ jobs:
               const testFile = path.resolve('./test-built-bundle.html');
               await page.goto('file://' + testFile);
 
-              // Wait for test to complete
-              await page.waitForTimeout(2000);
+              // Wait for test results to appear
+              try {
+                  await page.waitForSelector('#results', { timeout: 10000 });
+                  
+                  // Wait for test content to be populated
+                  await page.waitForFunction(() => {
+                      const elem = document.getElementById('results');
+                      return elem && elem.textContent && elem.textContent.trim() !== '';
+                  }, { timeout: 5000 });
+              } catch (error) {
+                  console.warn('Timeout waiting for test results, continuing anyway...');
+              }
 
               // Check results
               const results = await page.evaluate(() => {
