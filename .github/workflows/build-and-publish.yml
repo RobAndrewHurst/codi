@@ -31,12 +31,12 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
-    
+
     outputs:
       version: ${{ steps.version.outputs.version }}
       new_version: ${{ steps.version.outputs.new_version }}
       should_publish: ${{ steps.version.outputs.should_publish }}
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,17 +60,17 @@ jobs:
           # Get current version from package.json
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "Current version: $CURRENT_VERSION"
-          
+
           # Determine if we should publish and what version to use
           SHOULD_PUBLISH="false"
           NEW_VERSION="$CURRENT_VERSION"
           PUBLISH_TYPE="none"
-          
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # Manual workflow dispatch
             SHOULD_PUBLISH="true"
             PUBLISH_TYPE="${{ github.event.inputs.publish_type }}"
-            
+
             if [[ -n "${{ github.event.inputs.force_version }}" ]]; then
               NEW_VERSION="${{ github.event.inputs.force_version }}"
             else
@@ -106,29 +106,29 @@ jobs:
                   ;;
               esac
             fi
-            
+
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             # Tag push - publish as latest
             SHOULD_PUBLISH="true"
             PUBLISH_TYPE="latest"
             NEW_VERSION="${{ github.ref_name }}"
             NEW_VERSION="${NEW_VERSION#v}"  # Remove 'v' prefix
-            
+
           elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
             # Main branch push - auto-publish beta if tests pass
             SHOULD_PUBLISH="true"
             PUBLISH_TYPE="beta"
-            
+
             # Auto-increment beta version
             COMMIT_COUNT=$(git rev-list --count HEAD)
             NEW_VERSION="${CURRENT_VERSION}-beta.${COMMIT_COUNT}"
           fi
-          
+
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "should_publish=$SHOULD_PUBLISH" >> $GITHUB_OUTPUT
           echo "publish_type=$PUBLISH_TYPE" >> $GITHUB_OUTPUT
-          
+
           echo "Will publish: $SHOULD_PUBLISH"
           echo "Publish type: $PUBLISH_TYPE"
           echo "New version: $NEW_VERSION"
@@ -143,20 +143,20 @@ jobs:
         run: |
           echo "🔨 Building browser bundle..."
           npm run build
-          
+
           # Verify build output
           if [ ! -f "dist/codi.browser.js" ]; then
             echo "❌ Browser bundle build failed - dist/codi.browser.js not found"
             exit 1
           fi
-          
+
           # Get build stats
           BUNDLE_SIZE=$(stat -c%s "dist/codi.browser.js")
           BUNDLE_SIZE_KB=$(echo "scale=2; $BUNDLE_SIZE / 1024" | bc)
-          
+
           echo "✅ Browser bundle built successfully"
           echo "📏 Bundle size: ${BUNDLE_SIZE_KB} KB"
-          
+
           # Store build info
           echo "bundle_size_kb=${BUNDLE_SIZE_KB}" >> $GITHUB_ENV
 
@@ -190,7 +190,7 @@ jobs:
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
         run: |
           echo "🔍 Testing built browser bundle..."
-          
+
           # Create a simple test file for the built bundle
           cat > test-built-bundle.html << 'EOF'
           <!DOCTYPE html>
@@ -203,13 +203,13 @@ jobs:
               <script src="./dist/codi.browser.js"></script>
               <script>
                   const results = document.getElementById('results');
-                  
+
                   try {
                       // Test that codi is available globally
                       if (typeof codi === 'undefined') {
                           throw new Error('codi global not found');
                       }
-                      
+
                       // Test basic functionality
                       let testPassed = false;
                       codi.describe({ name: 'Built Bundle Test', id: 'bundle_test' }, () => {
@@ -220,13 +220,13 @@ jobs:
                               testPassed = true;
                           });
                       });
-                      
+
                       if (testPassed) {
                           results.innerHTML = '<div style="color: green;">✅ Built bundle test passed</div>';
                       } else {
                           results.innerHTML = '<div style="color: red;">❌ Built bundle test failed</div>';
                       }
-                      
+
                   } catch (error) {
                       results.innerHTML = '<div style="color: red;">❌ Built bundle test error: ' + error.message + '</div>';
                   }
@@ -234,43 +234,43 @@ jobs:
           </body>
           </html>
           EOF
-          
+
           # Test the bundle with Puppeteer
           node -e "
           const puppeteer = require('puppeteer');
           const fs = require('fs');
           const path = require('path');
-          
+
           (async () => {
               const browser = await puppeteer.launch({
                   headless: true,
                   args: ['--no-sandbox', '--disable-setuid-sandbox']
               });
-              
+
               const page = await browser.newPage();
-              
+
               // Serve the test file locally
               const testFile = path.resolve('./test-built-bundle.html');
               await page.goto('file://' + testFile);
-              
+
               // Wait for test to complete
               await page.waitForTimeout(2000);
-              
+
               // Check results
               const results = await page.evaluate(() => {
                   const elem = document.getElementById('results');
                   return elem ? elem.textContent : 'No results found';
               });
-              
+
               console.log('Bundle test results:', results);
-              
+
               if (results.includes('✅')) {
                   console.log('✅ Built bundle test passed');
               } else {
                   console.error('❌ Built bundle test failed');
                   process.exit(1);
               }
-              
+
               await browser.close();
           })();
           "
@@ -288,21 +288,21 @@ jobs:
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Build Summary
-          
-          **Version:** \`${{ steps.version.outputs.new_version }}\`  
-          **Bundle Size:** ${bundle_size_kb} KB  
-          **Should Publish:** ${{ steps.version.outputs.should_publish }}  
+
+          **Version:** \`${{ steps.version.outputs.new_version }}\`
+          **Bundle Size:** ${bundle_size_kb} KB
+          **Should Publish:** ${{ steps.version.outputs.should_publish }}
           **Publish Type:** ${{ steps.version.outputs.publish_type }}
-          
+
           ### ✅ Tests Passed
           - Node.js tests
-          - Browser tests  
+          - Browser tests
           - Built bundle verification
-          
+
           ### 📦 Artifacts
           - Browser bundle: \`dist/codi.browser.js\`
           - Source map: \`dist/codi.browser.js.map\`
-          
+
           EOF
 
   publish:
@@ -310,7 +310,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: needs.build.outputs.should_publish == 'true'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -337,7 +337,7 @@ jobs:
         id: publish_tag
         run: |
           VERSION="${{ needs.build.outputs.new_version }}"
-          
+
           if [[ "$VERSION" == *"-beta."* ]]; then
             TAG="beta"
           elif [[ "$VERSION" == *"-alpha."* ]]; then
@@ -347,7 +347,7 @@ jobs:
           else
             TAG="latest"
           fi
-          
+
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Publishing with tag: $TAG"
 
@@ -358,17 +358,17 @@ jobs:
           echo "📦 Publishing to NPM..."
           echo "Version: ${{ needs.build.outputs.new_version }}"
           echo "Tag: ${{ steps.publish_tag.outputs.tag }}"
-          
+
           # Configure npm authentication
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          
+
           # Publish with appropriate tag
           if [ "${{ steps.publish_tag.outputs.tag }}" == "latest" ]; then
             npm publish --access public
           else
             npm publish --access public --tag ${{ steps.publish_tag.outputs.tag }}
           fi
-          
+
           echo "✅ Published successfully!"
 
       - name: Create GitHub release for stable versions
@@ -381,20 +381,20 @@ jobs:
           release_name: Release v${{ needs.build.outputs.new_version }}
           body: |
             ## 🚀 Release v${{ needs.build.outputs.new_version }}
-            
+
             ### 📦 What's Included
             - Browser bundle: `dist/codi.browser.js`
             - NPM package: `codi-test-framework@${{ needs.build.outputs.new_version }}`
-            
+
             ### 🌐 CDN Links
             - JSDelivr: `https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js`
             - UNPKG: `https://unpkg.com/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js`
-            
+
             ### 📖 Usage
             ```html
             <!-- IIFE Bundle -->
             <script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js"></script>
-            
+
             <!-- ESM Import -->
             <script type="module">
             import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/src/_codi.browser.js';
@@ -407,33 +407,33 @@ jobs:
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 📦 Publish Summary
-          
+
           **✅ Successfully published to NPM!**
-          
-          **Package:** \`codi-test-framework@${{ needs.build.outputs.new_version }}\`  
-          **Tag:** \`${{ steps.publish_tag.outputs.tag }}\`  
+
+          **Package:** \`codi-test-framework@${{ needs.build.outputs.new_version }}\`
+          **Tag:** \`${{ steps.publish_tag.outputs.tag }}\`
           **Registry:** https://www.npmjs.com/package/codi-test-framework
-          
+
           ### 🌐 CDN Usage
           \`\`\`html
           <!-- IIFE Bundle -->
           <script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/dist/codi.browser.js"></script>
-          
+
           <!-- ESM Import (Browser) -->
           <script type="module">
           import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${{ needs.build.outputs.new_version }}/src/_codi.browser.js';
           </script>
           \`\`\`
-          
+
           ### 📝 Installation
           \`\`\`bash
           # Install specific version
           npm install codi-test-framework@${{ needs.build.outputs.new_version }}
-          
+
           # Install with tag
           npm install codi-test-framework@${{ steps.publish_tag.outputs.tag }}
           \`\`\`
-          
+
           EOF
 
   notify:
@@ -441,19 +441,19 @@ jobs:
     needs: [build, publish]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: Build and Publish Status
         run: |
           echo "## 🎯 Workflow Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ "${{ needs.build.result }}" == "success" ]; then
             echo "✅ **Build:** Successful" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Build:** Failed" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ needs.build.outputs.should_publish }}" == "true" ]; then
             if [ "${{ needs.publish.result }}" == "success" ]; then
               echo "✅ **Publish:** Successful" >> $GITHUB_STEP_SUMMARY
@@ -465,7 +465,7 @@ jobs:
           else
             echo "⏭️ **Publish:** Not Required" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
