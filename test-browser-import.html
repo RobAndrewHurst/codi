@@ -69,7 +69,7 @@
         <option value="latest">Latest Stable</option>
         <option value="beta">Latest Beta</option>
         <option value="alpha">Latest Alpha</option>
-        <option value="1.0.39">v1.0.39 (Specific)</option>
+        <option value="1.0.39">v1.0.40-beta (Specific)</option>
       </select>
       <button id="run-tests" style="margin-left: 10px; padding: 5px 15px;">
         Run Tests
@@ -118,11 +118,11 @@
 
             // Test 1: Browser-specific ESM import
             addInfo('Test 1', `Attempting ESM import from JSDelivr (browser-specific entry point)...`);
-            
+
             try {
                 const esmUrl = `https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/src/_codi.browser.js`;
                 const codi = await import(esmUrl);
-                
+
                 addResult(
                     'JSDelivr ESM Import (Browser Entry)',
                     true,
@@ -178,10 +178,10 @@
                     'ESM.sh import succeeded with main entry point - this is the preferred method!',
                     `URL: ${esmUrl}\nVersion: ${codi.version || 'Unknown'}\nAvailable functions: ${Object.keys(codi).join(', ')}`
                 );
-                
+
                 // Test functionality with esm.sh import
                 await testFunctionality(codi, 'ESM.sh');
-                
+
             } catch (esmError) {
                 addResult(
                     'ESM.sh Import (Main Entry)',
@@ -217,7 +217,7 @@
                             });
                         });
                     }, { quiet: true, showSummary: false });
-                    
+
                     testDetails.push('Basic functionality test passed');
                 } else {
                     testDetails.push(`Missing functions: ${functionsToTest.filter(fn => !availableFunctions.includes(fn)).join(', ')}`);
@@ -245,7 +245,7 @@
                 const script = document.createElement('script');
                 const scriptUrl = `https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/dist/codi.browser.js`;
                 script.src = scriptUrl;
-                
+
                 script.onload = () => {
                     if (typeof window.codi !== 'undefined') {
                         addResult(
@@ -254,7 +254,7 @@
                             'IIFE build loaded successfully and codi is available globally',
                             `URL: ${scriptUrl}\nGlobal codi object available with functions: ${Object.keys(window.codi).join(', ')}\nVersion: ${window.codi.version || 'Unknown'}`
                         );
-                        
+
                         // Test IIFE functionality
                         testIIFEFunctionality();
                     } else {
@@ -267,7 +267,7 @@
                     }
                     resolve();
                 };
-                
+
                 script.onerror = (error) => {
                     addResult(
                         'IIFE Build Load',
@@ -291,9 +291,9 @@
                 // Test that individual functions are also available globally
                 const globalFunctions = ['describe', 'it', 'assertEqual', 'assertTrue', 'assertFalse'];
                 const availableGlobals = globalFunctions.filter(fn => typeof window[fn] === 'function');
-                
+
                 let testPassed = false;
-                
+
                 // Run a simple test using global functions
                 if (availableGlobals.includes('assertEqual')) {
                     window.assertEqual(3 + 3, 6, 'Global function test');
@@ -324,7 +324,7 @@
             // Test local IIFE build
             const script = document.createElement('script');
             script.src = './dist/codi.browser.js';
-            
+
             script.onload = () => {
                 if (typeof window.codi !== 'undefined') {
                     addResult(
@@ -343,7 +343,7 @@
                     );
                 }
             };
-            
+
             script.onerror = () => {
                 addResult(
                     'Local IIFE Build',
@@ -378,10 +378,10 @@
                     <h3>🔧 Quick Implementation Examples</h3>
                     <p><strong>🎯 ESM Import (Recommended - ESM.sh):</strong></p>
                     <pre>import * as codi from 'https://esm.sh/codi-test-framework@${version}';</pre>
-                    
+
                     <p><strong>ESM Import (Alternative - JSDelivr):</strong></p>
                     <pre>import * as codi from 'https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/src/_codi.browser.js';</pre>
-                    
+
                     <p><strong>Script Tag:</strong></p>
                     <pre>&lt;script src="https://cdn.jsdelivr.net/npm/codi-test-framework@${version}/dist/codi.browser.js"&gt;&lt;/script&gt;</pre>
 
@@ -394,7 +394,7 @@
                         <li>✅ Tests main entry point browser compatibility</li>
                         <li>✅ Publishes with appropriate npm tags</li>
                     </ul>
-                    
+
                     <h3>✨ ESM.sh Compatibility</h3>
                     <p>The main entry point now works seamlessly with ESM.sh by:</p>
                     <ul>

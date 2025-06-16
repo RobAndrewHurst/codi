@@ -9,7 +9,7 @@ import {
 } from './runners/webRunner.js';
 import { state } from './state/TestState.js';
 
-const version = 'v1.0.39';
+const version = 'v1.0.40-beta';
 
 // Create the browser-specific codi object (no Node.js dependencies)
 const codi = {

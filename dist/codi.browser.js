@@ -1,12 +1,12 @@
 /**
  * Codi Test Framework - Browser Bundle
- * Version: v1.0.39-beta
- * Generated: 2025-06-16T14:35:19.727Z
+ * Version: v1.0.40-beta
+ * Generated: 2025-06-16T15:20:34.851Z
  * Build tool: esbuild
  *
  * @license MIT
  */
-'use strict';
+"use strict";
 var codi = (() => {
   var __defProp = Object.defineProperty;
   var __defProps = Object.defineProperties;
@@ -16,21 +16,15 @@ var codi = (() => {
   var __getOwnPropSymbols = Object.getOwnPropertySymbols;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __propIsEnum = Object.prototype.propertyIsEnumerable;
-  var __defNormalProp = (obj, key, value) =>
-    key in obj
-      ? __defProp(obj, key, {
-          enumerable: true,
-          configurable: true,
-          writable: true,
-          value,
-        })
-      : (obj[key] = value);
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __spreadValues = (a, b) => {
     for (var prop in b || (b = {}))
-      if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
     if (__getOwnPropSymbols)
       for (var prop of __getOwnPropSymbols(b)) {
-        if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
       }
     return a;
   };
@@ -40,21 +34,16 @@ var codi = (() => {
       __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if ((from && typeof from === 'object') || typeof from === 'function') {
-      for (const key of __getOwnPropNames(from))
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, {
-            get: () => from[key],
-            enumerable:
-              !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
-          });
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
     }
     return to;
   };
-  var __toCommonJS = (mod) =>
-    __copyProps(__defProp({}, '__esModule', { value: true }), mod);
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var __publicField = (obj, key, value) => {
-    __defNormalProp(obj, typeof key !== 'symbol' ? key + '' : key, value);
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
     return value;
   };
 
@@ -76,7 +65,7 @@ var codi = (() => {
     runWebTestFunction: () => runWebTestFunction,
     runWebTests: () => runWebTests,
     state: () => state,
-    version: () => version,
+    version: () => version
   });
 
   // scripts/chalk-browser-stub.js
@@ -97,17 +86,16 @@ var codi = (() => {
       magenta: (text) => text,
       cyan: (text) => text,
       white: (text) => text,
-      underline: (text) => text,
+      underline: (text) => text
     },
-    underline: (text) => text,
+    underline: (text) => text
   };
 
   // src/assertions/assertEqual.js
   function assertEqual(actual, expected, message) {
     if (!isDeepEqual(actual, expected)) {
       throw new Error(
-        message ||
-          `Expected ${chalk_browser_stub_default.bold.yellow(JSON.stringify(actual))} to deeply equal ${chalk_browser_stub_default.bold.yellow(JSON.stringify(expected))}`,
+        message || `Expected ${chalk_browser_stub_default.bold.yellow(JSON.stringify(actual))} to deeply equal ${chalk_browser_stub_default.bold.yellow(JSON.stringify(expected))}`
       );
     }
   }
@@ -115,12 +103,7 @@ var codi = (() => {
     if (obj1 === obj2) {
       return true;
     }
-    if (
-      typeof obj1 !== 'object' ||
-      typeof obj2 !== 'object' ||
-      obj1 === null ||
-      obj2 === null
-    ) {
+    if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 === null || obj2 === null) {
       return false;
     }
     const keys1 = Object.keys(obj1);
@@ -140,8 +123,7 @@ var codi = (() => {
   function assertFalse(actual, message) {
     if (actual !== false) {
       throw new Error(
-        message ||
-          `Expected ${chalk_browser_stub_default.bold.yellow(actual)} to be false`,
+        message || `Expected ${chalk_browser_stub_default.bold.yellow(actual)} to be false`
       );
     }
   }
@@ -150,10 +132,7 @@ var codi = (() => {
   function assertNoDuplicates(arr, message) {
     arr = arr.filter((item, index) => arr.indexOf(item) !== index);
     if (arr.length > 0) {
-      throw new Error(
-        message ||
-          `Duplicates found: ${chalk_browser_stub_default.bold.yellow(arr)}`,
-      );
+      throw new Error(message || `Duplicates found: ${chalk_browser_stub_default.bold.yellow(arr)}`);
     }
   }
 
@@ -161,8 +140,7 @@ var codi = (() => {
   function assertNotEqual(actual, expected, message) {
     if (actual === expected) {
       throw new Error(
-        message ||
-          `Expected ${chalk_browser_stub_default.bold.yellow(actual)} not to equal ${chalk_browser_stub_default.bold.yellow(expected)}`,
+        message || `Expected ${chalk_browser_stub_default.bold.yellow(actual)} not to equal ${chalk_browser_stub_default.bold.yellow(expected)}`
       );
     }
   }
@@ -171,12 +149,11 @@ var codi = (() => {
   function assertThrows(callback, errorMessage, message) {
     try {
       callback();
-      throw new Error(message || 'Expected an error to be thrown');
+      throw new Error(message || "Expected an error to be thrown");
     } catch (error) {
       if (error.message !== errorMessage) {
         throw new Error(
-          message ||
-            `Expected error message to be ${chalk_browser_stub_default.bold.yellow(errorMessage)}, but got ${chalk_browser_stub_default.bold.yellow(error.message)}`,
+          message || `Expected error message to be ${chalk_browser_stub_default.bold.yellow(errorMessage)}, but got ${chalk_browser_stub_default.bold.yellow(error.message)}`
         );
       }
     }
@@ -186,8 +163,7 @@ var codi = (() => {
   function assertTrue(actual, message) {
     if (actual !== true) {
       throw new Error(
-        message ||
-          `Expected ${chalk_browser_stub_default.bold.yellow(actual)} to be true`,
+        message || `Expected ${chalk_browser_stub_default.bold.yellow(actual)} to be true`
       );
     }
   }
@@ -199,21 +175,19 @@ var codi = (() => {
     assertTrue,
     assertFalse,
     assertThrows,
-    assertNoDuplicates,
+    assertNoDuplicates
   };
 
   // src/codepen/logging.js
   function codepenLogging() {
-    var following = false,
-      pre = document.createElement('pre'),
-      code = document.createElement('code');
+    var following = false, pre = document.createElement("pre"), code = document.createElement("code");
     pre.appendChild(code);
     document.body.appendChild(pre);
     var originalConsole = {
       log: window.console.log,
       info: window.console.info,
       warn: window.console.warn,
-      error: window.console.error,
+      error: window.console.error
     };
     function clear() {
       while (code.hasChildNodes()) {
@@ -224,23 +198,20 @@ var codi = (() => {
       following = true;
     }
     function print(className, ...objects) {
-      let s = objects
-        .map((obj) => {
-          if (typeof obj === 'string') {
-            return obj;
-          } else {
-            try {
-              return JSON.stringify(obj);
-            } catch (e) {
-              return String(obj);
-            }
+      let s = objects.map((obj) => {
+        if (typeof obj === "string") {
+          return obj;
+        } else {
+          try {
+            return JSON.stringify(obj);
+          } catch (e) {
+            return String(obj);
           }
-        })
-        .join(' ');
-      s = s.replace(/\[\d{1,2}m/g, '');
-      var span = document.createElement('span'),
-        text = document.createTextNode(s + '\n');
-      span.setAttribute('class', className);
+        }
+      }).join(" ");
+      s = s.replace(/\[\d{1,2}m/g, "");
+      var span = document.createElement("span"), text = document.createTextNode(s + "\n");
+      span.setAttribute("class", className);
       span.appendChild(text);
       code.appendChild(span);
       if (following) {
@@ -253,22 +224,22 @@ var codi = (() => {
     window.console = {
       clear,
       follow,
-      log: function (...args) {
-        print('debug', ...args);
+      log: function(...args) {
+        print("debug", ...args);
         originalConsole.log(...args);
       },
-      info: function (...args) {
-        print('info', ...args);
+      info: function(...args) {
+        print("info", ...args);
         originalConsole.info(...args);
       },
-      warn: function (...args) {
-        print('warn', ...args);
+      warn: function(...args) {
+        print("warn", ...args);
         originalConsole.warn(...args);
       },
-      error: function (...args) {
-        print('error', ...args);
+      error: function(...args) {
+        print("error", ...args);
         originalConsole.error(...args);
-      },
+      }
     };
     return window.console;
   }
@@ -277,15 +248,15 @@ var codi = (() => {
   var TestState = class {
     constructor() {
       // Track all running tests
-      __publicField(this, 'testTracker', {
+      __publicField(this, "testTracker", {
         pendingTests: /* @__PURE__ */ new Set(),
-        addTest: function (promise) {
+        addTest: function(promise) {
           this.pendingTests.add(promise);
           promise.finally(() => this.pendingTests.delete(promise));
         },
-        waitForAll: function () {
+        waitForAll: function() {
           return Promise.all(Array.from(this.pendingTests));
-        },
+        }
       });
       this.passedTests = 0;
       this.failedTests = 0;
@@ -313,22 +284,20 @@ var codi = (() => {
      * @param {object} suite - Test suite to add
      */
     pushSuite(suite) {
-      let parentSuite = '';
+      let parentSuite = "";
       if (suite.parentId) {
         parentSuite = this.getSuite(suite.parentId);
       } else {
         if (this.suiteStack[suite.id]) {
           console.warn(
-            chalk_browser_stub_default.yellow(
-              `There is already a Suite with the ID: ${suite.id}`,
-            ),
+            chalk_browser_stub_default.yellow(`There is already a Suite with the ID: ${suite.id}`)
           );
           suite.id = suite.name + suite.id;
         }
       }
       const nestedSuite = __spreadProps(__spreadValues({}, suite), {
         children: [],
-        tests: [],
+        tests: []
       });
       if (parentSuite) {
         parentSuite.children.push(nestedSuite);
@@ -392,32 +361,22 @@ var codi = (() => {
       Object.keys(this.suiteStack).forEach((id) => {
         printSuite(this.suiteStack[id], 0, this.options);
       });
-      console.log(chalk_browser_stub_default.bold.cyan('\nTest Summary:'));
-      console.log(
-        chalk_browser_stub_default.green(`  Passed: ${this.passedTests}`),
-      );
-      console.log(
-        chalk_browser_stub_default.red(`  Failed: ${this.failedTests}`),
-      );
-      console.log(
-        chalk_browser_stub_default.blue(`  Time: ${this.getExecutionTime()}s`),
-      );
+      console.log(chalk_browser_stub_default.bold.cyan("\nTest Summary:"));
+      console.log(chalk_browser_stub_default.green(`  Passed: ${this.passedTests}`));
+      console.log(chalk_browser_stub_default.red(`  Failed: ${this.failedTests}`));
+      console.log(chalk_browser_stub_default.blue(`  Time: ${this.getExecutionTime()}s`));
     }
   };
   var printSuite = (suite, indent, options) => {
-    const indentation = '  '.repeat(indent);
+    const indentation = "  ".repeat(indent);
     let results = suite.tests;
     let hasFailingChildren = false;
     if (options.quiet) {
-      results = results.filter((result) => result.status === 'failed');
+      results = results.filter((result) => result.status === "failed");
     }
     function hasFailingTests(suite2) {
       var _a;
-      if (
-        (_a = suite2.tests) == null
-          ? void 0
-          : _a.some((test) => test.status === 'failed')
-      ) {
+      if ((_a = suite2.tests) == null ? void 0 : _a.some((test) => test.status === "failed")) {
         return true;
       }
       if (suite2.children) {
@@ -426,43 +385,24 @@ var codi = (() => {
       return false;
     }
     if (suite.children) {
-      hasFailingChildren = suite.children.some((child) =>
-        hasFailingTests(child),
-      );
+      hasFailingChildren = suite.children.some((child) => hasFailingTests(child));
     }
-    if (
-      (suite.children.length > 0 && hasFailingChildren) ||
-      results.length > 0
-    ) {
-      console.log(
-        '\n' +
-          indentation +
-          chalk_browser_stub_default.yellow(
-            chalk_browser_stub_default.bold(suite.name),
-          ),
-      );
+    if (suite.children.length > 0 && hasFailingChildren || results.length > 0) {
+      console.log("\n" + indentation + chalk_browser_stub_default.yellow(chalk_browser_stub_default.bold(suite.name)));
     }
     results.forEach((result) => {
       var _a;
-      if (result.status === 'failed') {
+      if (result.status === "failed") {
         console.log(
-          indentation +
-            chalk_browser_stub_default.red(
-              `  \u2514\u2500 \u26D4 ${result.name} (${result.duration.toFixed(2)}ms)`,
-            ),
+          indentation + chalk_browser_stub_default.red(`  \u2514\u2500 \u26D4 ${result.name} (${result.duration.toFixed(2)}ms)`)
         );
-        const errorMessage = ((_a = result.error) == null ? void 0 : _a.message)
-          ? result.error.message
-          : 'Unknown error';
-        console.log(
-          indentation + chalk_browser_stub_default.red(`     ${errorMessage}`),
-        );
+        const errorMessage = ((_a = result.error) == null ? void 0 : _a.message) ? result.error.message : "Unknown error";
+        console.log(indentation + chalk_browser_stub_default.red(`     ${errorMessage}`));
       } else {
         console.log(
-          indentation +
-            chalk_browser_stub_default.green(
-              `  \u2514\u2500 \u2705 ${result.name} (${result.duration.toFixed(2)}ms)`,
-            ),
+          indentation + chalk_browser_stub_default.green(
+            `  \u2514\u2500 \u2705 ${result.name} (${result.duration.toFixed(2)}ms)`
+          )
         );
       }
     });
@@ -478,18 +418,14 @@ var codi = (() => {
       name: params.name,
       id: params.id,
       parentId: params.parentId,
-      startTime: performance.now(),
+      startTime: performance.now()
     };
     const nestedSuite = state.pushSuite(suite);
     const suitePromise = (async () => {
       try {
         await Promise.resolve(callback(suite));
       } catch (error) {
-        console.error(
-          chalk_browser_stub_default.red(
-            `Suite failed: ${nestedSuite.fullPath}`,
-          ),
-        );
+        console.error(chalk_browser_stub_default.red(`Suite failed: ${nestedSuite.fullPath}`));
         console.error(chalk_browser_stub_default.red(error.stack));
       } finally {
         nestedSuite.duration = performance.now() - nestedSuite.startTime;
@@ -507,16 +443,16 @@ var codi = (() => {
     }
     const test = {
       name: params.name,
-      startTime: performance.now(),
+      startTime: performance.now()
     };
     const testPromise = (async () => {
       try {
         await Promise.resolve(callback());
-        test.status = 'passed';
+        test.status = "passed";
         test.duration = performance.now() - test.startTime;
         state.passedTests++;
       } catch (error) {
-        test.status = 'failed';
+        test.status = "failed";
         test.error = error;
         test.duration = performance.now() - test.startTime;
         state.failedTests++;
@@ -531,9 +467,9 @@ var codi = (() => {
   // src/runners/webRunner.js
   async function runWebTestFile(testFile, options) {
     const defaults = {
-      silent: false,
+      silent: false
     };
-    options != null ? options : (options = defaults);
+    options != null ? options : options = defaults;
     try {
       const testPromise = import(testFile);
       await Promise.resolve(testPromise);
@@ -546,15 +482,15 @@ var codi = (() => {
   async function runWebTests(testFiles, options) {
     const defaults = {
       quiet: false,
-      showSummary: true,
+      showSummary: true
     };
-    options != null ? options : (options = defaults);
+    options != null ? options : options = defaults;
     state.resetCounters();
     state.startTimer();
     if (!options.quiet) {
       console.log(
         chalk_browser_stub_default.bold.magenta(`
-Running ${testFiles.length} web test file(s)`),
+Running ${testFiles.length} web test file(s)`)
       );
     }
     try {
@@ -562,7 +498,7 @@ Running ${testFiles.length} web test file(s)`),
         await runWebTestFile(file, options);
       }
     } catch (error) {
-      console.error(chalk_browser_stub_default.red('\nTest execution failed:'));
+      console.error(chalk_browser_stub_default.red("\nTest execution failed:"));
       console.error(chalk_browser_stub_default.red(error.stack));
     }
     const summary = {
@@ -570,7 +506,7 @@ Running ${testFiles.length} web test file(s)`),
       passedTests: state.passedTests,
       failedTests: state.failedTests,
       executionTime: state.getExecutionTime(),
-      suiteStack: state.suiteStack,
+      suiteStack: state.suiteStack
     };
     if (options.showSummary) {
       state.printSummary();
@@ -578,18 +514,16 @@ Running ${testFiles.length} web test file(s)`),
     return summary;
   }
   async function runWebTestFunction(testFn, options) {
-    options != null
-      ? options
-      : (options = {
-          quiet: false,
-          showSummary: true,
-        });
+    options != null ? options : options = {
+      quiet: false,
+      showSummary: true
+    };
     state.setOptions(options);
     try {
       await Promise.resolve(testFn());
       await state.testTracker.waitForAll();
     } catch (error) {
-      console.error('Error in test suite:', error);
+      console.error("Error in test suite:", error);
       state.failedTests++;
     }
     if (options.showSummary) {
@@ -598,12 +532,12 @@ Running ${testFiles.length} web test file(s)`),
     return {
       passedTests: state.passedTests,
       failedTests: state.failedTests,
-      suiteStack: state.suiteStack,
+      suiteStack: state.suiteStack
     };
   }
 
   // src/_codi.browser.js
-  var version = 'v1.0.39';
+  var version = "v1.0.40-beta";
   var codi = {
     describe,
     it,
@@ -618,7 +552,7 @@ Running ${testFiles.length} web test file(s)`),
     assertThrows: assertions_default.assertThrows,
     assertNoDuplicates: assertions_default.assertNoDuplicates,
     version,
-    codepenLogging,
+    codepenLogging
   };
   globalThis.codi = codi;
   var {
@@ -627,7 +561,7 @@ Running ${testFiles.length} web test file(s)`),
     assertTrue: assertTrue2,
     assertFalse: assertFalse2,
     assertThrows: assertThrows2,
-    assertNoDuplicates: assertNoDuplicates2,
+    assertNoDuplicates: assertNoDuplicates2
   } = assertions_default;
   var codi_browser_default = codi;
   return __toCommonJS(codi_browser_exports);

@@ -9,7 +9,7 @@ import {
 } from './runners/webRunner.js';
 import { state } from './state/TestState.js';
 
-const version = 'v1.0.39';
+const version = 'v1.0.40-beta';
 
 // Check if we're in a browser environment
 const isBrowser =
