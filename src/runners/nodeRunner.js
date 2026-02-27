@@ -86,7 +86,9 @@ export async function runTests(
     await runTestFile(path.join(testDirectory, file));
   }
 
-  state.printSummary();
+  if (!options.skipSummary) {
+    state.printSummary();
+  }
 
   return {
     passedTests: state.passedTests,

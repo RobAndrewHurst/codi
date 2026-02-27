@@ -228,7 +228,8 @@ codi <testDirectory> [options]
 
 | Flag | Description |
 |---|---|
-| `--browser` | Run tests in a headless browser (Puppeteer) |
+| `--node-only` | Run only Node tests, skip browser test files |
+| `--browser` | Run only browser tests in real Chromium (Puppeteer) |
 | `--parallel` | Run test files in parallel using worker threads |
 | `--watch` | Watch for file changes and re-run tests |
 | `--coverage` | Run with code coverage via c8 |
@@ -242,10 +243,13 @@ codi <testDirectory> [options]
 ### Examples
 
 ```bash
-# Run all tests
+# Run all tests (Node + browser)
 codi ./tests
 
-# Run in browser
+# Node tests only
+codi ./tests --node-only
+
+# Browser tests only (real Chromium)
 codi ./tests --browser
 
 # Run in parallel
@@ -350,30 +354,50 @@ The `coverage` object maps directly to [c8 options](https://github.com/bcoe/c8):
 
 ## Browser Testing
 
-Codi runs tests in a headless Chromium browser via Puppeteer. Browser tests have access to `window`, `document`, DOM APIs, `localStorage`, `fetch`, and other browser globals.
+Browser tests run alongside Node tests in a single command — no separate step required. Codi uses [happy-dom](https://github.com/nicedaytoday/happy-dom) to provide `window`, `document`, `localStorage`, DOM APIs, and other browser globals inside Node.js.
+
+Name your browser test files with `browser` in the filename (e.g. `browser.test.mjs`). Codi auto-detects them:
+
+- **Node test files** — any `.mjs` file without "browser" in the name
+- **Browser test files** — any `.mjs` file with "browser" in the name
 
 ```bash
-codi ./tests --browser
+# Runs both Node and browser tests together
+codi ./tests
 ```
 
 ```js
+// browser.test.mjs
 import { describe, it, assertEqual, assertTrue } from 'codi-test-framework';
 
-describe({ name: 'DOM Tests', id: 'dom' }, () => {
-  it({ name: 'should create elements', parentId: 'dom' }, () => {
+describe('DOM Tests', () => {
+  it('should create elements', () => {
     const div = document.createElement('div');
     div.textContent = 'Hello';
     assertEqual(div.tagName, 'DIV');
     assertEqual(div.textContent, 'Hello');
   });
 
-  it({ name: 'should have fetch', parentId: 'dom' }, () => {
+  it('should have fetch', () => {
     assertTrue(typeof fetch !== 'undefined');
+  });
+
+  it('should use localStorage', () => {
+    localStorage.setItem('key', 'value');
+    assertEqual(localStorage.getItem('key'), 'value');
   });
 });
 ```
 
-Name your browser test files with `browser` in the filename (e.g. `browser.test.mjs`). The Node runner automatically excludes files containing "browser" in their name, and the browser runner only includes them.
+### Run modes
+
+| Command | What runs |
+|---|---|
+| `codi ./tests` | Node tests + browser tests (via happy-dom) |
+| `codi ./tests --node-only` | Node tests only, skip browser files |
+| `codi ./tests --browser` | Browser tests only, in real Chromium via Puppeteer |
+
+Use `--browser` when you need a real browser engine (Canvas, WebGL, complex CSS, service workers). For DOM manipulation, `localStorage`, `fetch`, and most web APIs, the default happy-dom mode is faster and requires no browser binary.
 
 ## Mocking
 

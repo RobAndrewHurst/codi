@@ -1,6 +1,6 @@
 {
   "name": "codi-test-framework",
-  "version": "1.0.39-beta",
+  "version": "2.0.0-beta",
   "description": "A simple test framework for JavaScript",
   "type": "module",
   "main": "src/_codi.js",
@@ -20,18 +20,18 @@
   "scripts": {
     "test": "npm run tests",
     "tests": "node --experimental-test-module-mocks cli.js tests --returnResults",
+    "test:node-only": "node --experimental-test-module-mocks cli.js tests --node-only --returnResults",
     "test:web": "bun --bun ./tests/webfunction.js",
     "test:browser": "node cli.js tests --browser",
-    "test:all": "npm run tests && npm run test:browser",
     "build": "node scripts/build-esbuild.js",
-    "dev": "npm run build && npm run test:all",
+    "dev": "npm run build && npm run tests",
     "prepublishOnly": "npm run build",
     "postbuild": "npm run test:browser",
     "version": "bun --bun cli.js --version",
     "clean": "rm -rf dist/*.js dist/*.map",
-    "check": "npm run build && npm run test:all",
+    "check": "npm run build && npm run tests",
     "validate": "node scripts/validate-automation.js",
-    "validate:ci": "npm run validate && npm run build && npm run test:all"
+    "validate:ci": "npm run validate && npm run build && npm run tests"
   },
   "keywords": [
     "test",
@@ -42,6 +42,7 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.3.0",
+    "happy-dom": "^20.7.0",
     "node-mocks-http": "^1.16.2",
     "puppeteer": "^23.0.0",
     "undici": "^7.3.0"

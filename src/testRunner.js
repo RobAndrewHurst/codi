@@ -3,14 +3,17 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import { runBrowserTests } from './runners/browserRunner.js';
+import { hasBrowserTests, runDOMTests } from './runners/domRunner.js';
 // Import runTests directly to use in runCLI
 import { runTests as nodeRunTests } from './runners/nodeRunner.js';
+import { state } from './state/TestState.js';
 
 export {
   runBrowserTestFile,
   runBrowserTestFunction,
   runBrowserTests,
 } from './runners/browserRunner.js';
+export { hasBrowserTests, runDOMTests } from './runners/domRunner.js';
 // Runner exports - re-export everything
 export { runTestFunction, runTests } from './runners/nodeRunner.js';
 export { runTestsParallel } from './runners/parallelRunner.js';
@@ -28,6 +31,7 @@ export async function runCodi() {
   const configPathIndex = process.argv.indexOf('--config');
   const quiet = process.argv.includes('--quiet');
   const browser = process.argv.includes('--browser');
+  const nodeOnly = process.argv.includes('--node-only');
   const watchMode = process.argv.includes('--watch');
   const coverageMode = process.argv.includes('--coverage');
   const parallel = process.argv.includes('--parallel');
@@ -129,43 +133,98 @@ export async function runCodi() {
   }
 
   const runOptions = { quiet, grep, reporter };
-
-  if (!quiet) {
-    const mode = browser ? 'browser' : parallel ? 'parallel' : 'node';
-    console.log(chalk.bold.cyan('='.repeat(40)));
-    console.log(chalk.bold.cyan(`Running ${mode} tests...`));
-    if (grep) {
-      console.log(chalk.bold.cyan(`Filtering tests matching: ${grep}`));
-    }
-    console.log(chalk.bold.cyan('='.repeat(40)));
-  }
-
   let results;
+
+  // ── Mode: --browser (Puppeteer only) ────────────────────────────
   if (browser) {
+    if (!quiet) {
+      console.log(chalk.bold.cyan('='.repeat(40)));
+      console.log(chalk.bold.cyan('Running browser tests (Puppeteer)...'));
+      if (grep) console.log(chalk.bold.cyan(`Filtering: ${grep}`));
+      console.log(chalk.bold.cyan('='.repeat(40)));
+    }
+
     results = await runBrowserTests(
       testDirectory,
       returnResults,
       codiConfig,
       runOptions,
     );
-  } else if (parallel) {
-    const { runTestsParallel } = await import('./runners/parallelRunner.js');
-    results = await runTestsParallel(
-      testDirectory,
-      returnResults,
-      codiConfig,
-      runOptions,
-    );
+
+    // ── Mode: --node-only ───────────────────────────────────────────
+  } else if (nodeOnly) {
+    if (!quiet) {
+      console.log(chalk.bold.cyan('='.repeat(40)));
+      console.log(
+        chalk.bold.cyan(`Running ${parallel ? 'parallel' : 'node'} tests...`),
+      );
+      if (grep) console.log(chalk.bold.cyan(`Filtering: ${grep}`));
+      console.log(chalk.bold.cyan('='.repeat(40)));
+    }
+
+    if (parallel) {
+      const { runTestsParallel } = await import('./runners/parallelRunner.js');
+      results = await runTestsParallel(
+        testDirectory,
+        returnResults,
+        codiConfig,
+        runOptions,
+      );
+    } else {
+      results = await nodeRunTests(
+        testDirectory,
+        returnResults,
+        codiConfig,
+        runOptions,
+      );
+    }
+
+    // ── Mode: default (unified — node + browser DOM) ────────────────
   } else {
-    results = await nodeRunTests(
-      testDirectory,
-      returnResults,
-      codiConfig,
-      runOptions,
-    );
+    const foundBrowserTests = hasBrowserTests(testDirectory, codiConfig);
+
+    if (!quiet) {
+      console.log(chalk.bold.cyan('='.repeat(40)));
+      console.log(chalk.bold.cyan('Running tests...'));
+      if (grep) console.log(chalk.bold.cyan(`Filtering: ${grep}`));
+      console.log(chalk.bold.cyan('='.repeat(40)));
+    }
+
+    // Run node tests first. If browser tests will follow, skip the summary.
+    const nodeOptions = {
+      ...runOptions,
+      skipSummary: foundBrowserTests,
+    };
+
+    if (parallel) {
+      const { runTestsParallel } = await import('./runners/parallelRunner.js');
+      results = await runTestsParallel(
+        testDirectory,
+        returnResults,
+        codiConfig,
+        nodeOptions,
+      );
+    } else {
+      results = await nodeRunTests(
+        testDirectory,
+        returnResults,
+        codiConfig,
+        nodeOptions,
+      );
+    }
+
+    // If browser test files exist, run them via happy-dom in the same process.
+    // The DOM runner adds to the existing state (skipReset), then prints the
+    // combined summary.
+    if (foundBrowserTests) {
+      results = await runDOMTests(testDirectory, returnResults, codiConfig, {
+        ...runOptions,
+        skipReset: true,
+      });
+    }
   }
 
-  // When called from CLI, handle exit codes
+  // ── Exit / return ───────────────────────────────────────────────
   if (returnResults) {
     return results;
   }
