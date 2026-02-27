@@ -2,8 +2,129 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
+import { fileURLToPath } from 'url';
 import { state } from '../state/TestState.js';
 import { excludePattern } from '../util/regex.js';
+import { version } from '../version.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Resolve the path to the built IIFE browser bundle.
+ * Falls back gracefully if the bundle doesn't exist yet.
+ * @returns {string|null} The bundle source code, or null if not found.
+ */
+function loadBrowserBundle() {
+  const bundlePath = path.join(__dirname, '../../dist/codi.browser.js');
+  try {
+    return fs.readFileSync(bundlePath, 'utf8');
+  } catch {
+    console.warn(
+      chalk.yellow(
+        'Browser bundle not found at dist/codi.browser.js. Run "npm run build" first.',
+      ),
+    );
+    return null;
+  }
+}
+
+/**
+ * Get Puppeteer launch options, with CI-specific tweaks.
+ * @returns {object} Puppeteer launch options
+ */
+function getLaunchOptions() {
+  const isCI =
+    process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+  const launchOptions = {
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor',
+      '--allow-file-access-from-files',
+      '--enable-local-file-accesses',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-ipc-flooding-protection',
+    ],
+  };
+
+  if (isCI) {
+    launchOptions.args.push(
+      '--disable-extensions',
+      '--disable-plugins',
+      '--disable-default-apps',
+      '--disable-background-networking',
+      '--disable-sync',
+      '--metrics-recording-only',
+      '--no-default-browser-check',
+      '--mute-audio',
+      '--hide-scrollbars',
+      '--disable-logging',
+      '--disable-gpu-logging',
+      '--disable-translate',
+    );
+  }
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+
+  return launchOptions;
+}
+
+/**
+ * Attach console and error listeners to a Puppeteer page.
+ * @param {import('puppeteer').Page} page
+ * @param {object} options
+ */
+function attachPageListeners(page, options) {
+  page.on('console', (msg) => {
+    const type = msg.type();
+    const text = msg.text();
+
+    if (
+      text.includes('Puppeteer') ||
+      text.includes('DevTools') ||
+      text.includes('chrome-extension') ||
+      text.includes('Debugger attached') ||
+      text.includes('Debugger detached')
+    ) {
+      return;
+    }
+
+    if (!options.quiet) {
+      switch (type) {
+        case 'log':
+          console.log(text);
+          break;
+        case 'error':
+          console.error(chalk.red(`Browser Error: ${text}`));
+          break;
+        case 'warn':
+          console.warn(chalk.yellow(`Browser Warning: ${text}`));
+          break;
+        default:
+          console.log(`[Browser ${type}] ${text}`);
+      }
+    }
+  });
+
+  page.on('pageerror', (error) => {
+    if (!options.quiet) {
+      console.error(chalk.red('Page error:'), error.message);
+    }
+  });
+}
 
 /**
  * Run tests in a headless browser environment
@@ -34,7 +155,7 @@ export async function runBrowserTests(
     testFiles = testFiles.filter((file) => !matcher(file));
   }
 
-  // Filter out non-browser compatible tests for now
+  // Filter to browser-specific test files
   testFiles = testFiles.filter((file) => file.includes('browser'));
 
   if (!options.quiet) {
@@ -50,100 +171,10 @@ export async function runBrowserTests(
   let page = null;
 
   try {
-    // Launch headless browser with CI-specific configuration
-    const isCI =
-      process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
-    const launchOptions = {
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--allow-file-access-from-files',
-        '--enable-local-file-accesses',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        '--disable-ipc-flooding-protection',
-      ],
-    };
-
-    // Add CI-specific options
-    if (isCI) {
-      launchOptions.args.push(
-        '--disable-extensions',
-        '--disable-plugins',
-        '--disable-default-apps',
-        '--disable-background-networking',
-        '--disable-sync',
-        '--metrics-recording-only',
-        '--no-default-browser-check',
-        '--no-first-run',
-        '--mute-audio',
-        '--hide-scrollbars',
-        '--disable-logging',
-        '--disable-gpu-logging',
-        '--disable-translate',
-        '--disable-ipc-flooding-protection',
-      );
-    }
-
-    // Use system Chrome in CI if available
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-    }
-
-    browser = await puppeteer.launch(launchOptions);
-
+    browser = await puppeteer.launch(getLaunchOptions());
     page = await browser.newPage();
+    attachPageListeners(page, options);
 
-    // Set up console logging from browser
-    page.on('console', (msg) => {
-      const type = msg.type();
-      const text = msg.text();
-
-      // Filter out Puppeteer internal messages and Chrome DevTools messages
-      if (
-        text.includes('Puppeteer') ||
-        text.includes('DevTools') ||
-        text.includes('chrome-extension') ||
-        text.includes('Debugger attached') ||
-        text.includes('Debugger detached')
-      ) {
-        return;
-      }
-
-      if (!options.quiet) {
-        switch (type) {
-          case 'log':
-            console.log(text);
-            break;
-          case 'error':
-            console.error(chalk.red(`Browser Error: ${text}`));
-            break;
-          case 'warn':
-            console.warn(chalk.yellow(`Browser Warning: ${text}`));
-            break;
-          default:
-            console.log(`[Browser ${type}] ${text}`);
-        }
-      }
-    });
-
-    // Handle page errors
-    page.on('pageerror', (error) => {
-      if (!options.quiet) {
-        console.error(chalk.red('Page error:'), error.message);
-      }
-    });
-
-    // Create and set HTML content with proper origin to enable localStorage
     const htmlContent = createTestHTML(testDirectory, testFiles, codiConfig);
     const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
     await page.goto(dataUrl, { waitUntil: 'networkidle0' });
@@ -167,37 +198,26 @@ export async function runBrowserTests(
     console.error(chalk.red('Browser test execution failed:'), error.message);
     state.failedTests++;
   } finally {
-    // Clean up browser resources
-    if (page) {
-      await page.close();
-    }
-    if (browser) {
-      await browser.close();
-    }
+    if (page) await page.close();
+    if (browser) await browser.close();
   }
 
   state.printSummary();
 
-  if (returnResults) {
-    return {
-      passedTests: state.passedTests,
-      failedTests: state.failedTests,
-      suiteStack: state.suiteStack,
-      executionTime: state.getExecutionTime(),
-    };
-  }
-
-  if (state.failedTests > 0) {
-    console.log(chalk.red(`\n${state.failedTests} tests failed.`));
-    process.exit(1);
-  } else {
-    console.log(chalk.green(`\n${state.passedTests} tests passed.`));
-    process.exit(0);
-  }
+  return {
+    passedTests: state.passedTests,
+    failedTests: state.failedTests,
+    suiteStack: state.suiteStack,
+    executionTime: state.getExecutionTime(),
+  };
 }
 
 /**
- * Create HTML template for running tests in browser
+ * Create HTML template for running tests in browser.
+ *
+ * Uses the pre-built IIFE browser bundle (dist/codi.browser.js) to provide
+ * the full codi API, instead of re-implementing it inline.
+ *
  * @function createTestHTML
  * @param {string} testDirectory - Directory containing tests
  * @param {string[]} testFiles - Array of test file paths
@@ -205,22 +225,31 @@ export async function runBrowserTests(
  * @returns {string} HTML content
  */
 function createTestHTML(testDirectory, testFiles, codiConfig) {
-  // Read all the test files and process them
-  let testCode = '';
+  // Load the built IIFE bundle
+  const bundleCode = loadBrowserBundle();
+  if (!bundleCode) {
+    throw new Error(
+      'Browser bundle not found. Run "npm run build" before running browser tests.',
+    );
+  }
 
+  // Read and process test files -- strip codi imports (they come from the bundle)
+  let testCode = '';
   for (const file of testFiles) {
     const filePath = path.join(testDirectory, file);
     let content = fs.readFileSync(filePath, 'utf8');
 
-    // Remove imports and replace with global references
+    // Remove import statements that reference codi
     content = content
-      .replace(/import\s+{[^}]*}\s+from\s+['"][^'"]*_codi\.js['"];?\s*\n?/g, '')
       .replace(
-        /import\s+\*\s+as\s+\w+\s+from\s+['"][^'"]*_codi\.js['"];?\s*\n?/g,
+        /import\s+{[^}]*}\s+from\s+['"][^'"]*codi[^'"]*['"];?\s*\n?/g,
         '',
       )
-      .replace(/import\s+\w+\s+from\s+['"][^'"]*_codi\.js['"];?\s*\n?/g, '')
-      .replace(/from\s+['"][^'"]*_codi\.js['"]/g, '');
+      .replace(
+        /import\s+\*\s+as\s+\w+\s+from\s+['"][^'"]*codi[^'"]*['"];?\s*\n?/g,
+        '',
+      )
+      .replace(/import\s+\w+\s+from\s+['"][^'"]*codi[^'"]*['"];?\s*\n?/g, '');
 
     testCode += `\n// Test file: ${file}\n${content}\n`;
   }
@@ -231,7 +260,7 @@ function createTestHTML(testDirectory, testFiles, codiConfig) {
     try {
       const preloadFiles = fs
         .readdirSync(codiConfig.preload, { recursive: true })
-        .filter((file) => file.endsWith('.mjs') || file.endsWith('.js'));
+        .filter((f) => f.endsWith('.mjs') || f.endsWith('.js'));
 
       for (const file of preloadFiles) {
         const content = fs.readFileSync(
@@ -247,245 +276,16 @@ function createTestHTML(testDirectory, testFiles, codiConfig) {
     }
   }
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Codi Browser Tests</title>
-  <style>
-    body {
-      font-family: 'Courier New', monospace;
-      padding: 20px;
-      background: #1a1a1a;
-      color: #ffffff;
-    }
-    #test-output {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background: #000;
-      padding: 15px;
-      border-radius: 5px;
-    }
-  </style>
 </head>
 <body>
-  <h1>🐶 Codi Browser Tests</h1>
-  <div id="test-output"></div>
-
+  <!-- Codi IIFE bundle: provides window.codi and all global assertion/test functions -->
   <script>
-    // Create a simple test state management system
-    class BrowserTestState {
-      constructor() {
-        this.passedTests = 0;
-        this.failedTests = 0;
-        this.suiteStack = {};
-        this.startTime = performance.now();
-        this.pendingTests = new Set();
-      }
-
-      resetCounters() {
-        this.passedTests = 0;
-        this.failedTests = 0;
-        this.suiteStack = {};
-      }
-
-      getExecutionTime() {
-        return ((performance.now() - this.startTime) / 1000).toFixed(2);
-      }
-
-      pushSuite(suite) {
-        const nestedSuite = {
-          ...suite,
-          children: [],
-          tests: [],
-          fullPath: suite.name
-        };
-
-        if (suite.parentId && this.suiteStack[suite.parentId]) {
-          this.suiteStack[suite.parentId].children.push(nestedSuite);
-        } else {
-          this.suiteStack[suite.id] = nestedSuite;
-        }
-
-        return nestedSuite;
-      }
-
-      getSuite(parentId) {
-        return this.searchSuite(parentId, this.suiteStack);
-      }
-
-      searchSuite(parentId, suiteStack) {
-        function searchRecursively(suite) {
-          if (suite.id === parentId) return suite;
-          if (suite.children) {
-            for (const child of suite.children) {
-              const result = searchRecursively(child);
-              if (result) return result;
-            }
-          }
-          return null;
-        }
-
-        for (const suite of Object.values(suiteStack)) {
-          const result = searchRecursively(suite);
-          if (result) return result;
-        }
-        return null;
-      }
-
-      addTestToSuite(suite, test) {
-        if (suite) {
-          suite.tests.push(test);
-        }
-      }
-
-      addTest(promise) {
-        this.pendingTests.add(promise);
-        promise.finally(() => this.pendingTests.delete(promise));
-      }
-
-      async waitForAll() {
-        await Promise.all(Array.from(this.pendingTests));
-      }
-    }
-
-    // Initialize test state
-    window.testState = new BrowserTestState();
-
-    // Assertion functions
-    function isDeepEqual(obj1, obj2) {
-      if (obj1 === obj2) return true;
-      if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
-        return false;
-      }
-      const keys1 = Object.keys(obj1);
-      const keys2 = Object.keys(obj2);
-      if (keys1.length !== keys2.length) return false;
-      for (const key of keys1) {
-        if (!keys2.includes(key) || !isDeepEqual(obj1[key], obj2[key])) return false;
-      }
-      return true;
-    }
-
-    window.assertEqual = function(actual, expected, message) {
-      if (!isDeepEqual(actual, expected)) {
-        const errorMsg = message || \`Expected \${JSON.stringify(actual)} to deeply equal \${JSON.stringify(expected)}\`;
-        throw new Error(errorMsg);
-      }
-    };
-
-    window.assertNotEqual = function(actual, expected, message) {
-      if (actual === expected) {
-        throw new Error(message || \`Expected \${actual} not to equal \${expected}\`);
-      }
-    };
-
-    window.assertTrue = function(actual, message) {
-      if (actual !== true) {
-        const errorMsg = message || \`Expected \${actual} to be true\`;
-        throw new Error(errorMsg);
-      }
-    };
-
-    window.assertFalse = function(actual, message) {
-      if (actual !== false) {
-        throw new Error(message || \`Expected \${actual} to be false\`);
-      }
-    };
-
-    window.assertThrows = function(callback, errorMessage, message) {
-      try {
-        callback();
-        throw new Error(message || 'Expected an error to be thrown');
-      } catch (error) {
-        if (error.message !== errorMessage) {
-          throw new Error(message || \`Expected error message to be \${errorMessage}, but got \${error.message}\`);
-        }
-      }
-    };
-
-    window.assertNoDuplicates = function(arr, message) {
-      const duplicates = arr.filter((item, index) => arr.indexOf(item) !== index);
-      if (duplicates.length > 0) {
-        throw new Error(message || \`Duplicates found: \${duplicates}\`);
-      }
-    };
-
-    // Core test functions
-    window.describe = async function(params, callback) {
-      const suite = {
-        name: params.name,
-        id: params.id,
-        parentId: params.parentId,
-        startTime: performance.now(),
-      };
-
-      const nestedSuite = window.testState.pushSuite(suite);
-
-      const suitePromise = (async () => {
-        try {
-          await Promise.resolve(callback(suite));
-        } catch (error) {
-          console.error('Suite failed:', nestedSuite.fullPath, error);
-        } finally {
-          nestedSuite.duration = performance.now() - nestedSuite.startTime;
-        }
-      })();
-
-      window.testState.addTest(suitePromise);
-      return suitePromise;
-    };
-
-    window.it = async function(params, callback) {
-      const suite = window.testState.getSuite(params.parentId);
-
-      if (!suite) {
-        throw new Error(\`test: \${params.name} needs to belong to a suite\`);
-      }
-
-      const test = {
-        name: params.name,
-        startTime: performance.now(),
-      };
-
-      const testPromise = (async () => {
-        try {
-          await Promise.resolve(callback());
-          test.status = 'passed';
-          test.duration = performance.now() - test.startTime;
-          window.testState.passedTests++;
-        } catch (error) {
-          test.status = 'failed';
-          test.error = { message: error.message || String(error) };
-          test.duration = performance.now() - test.startTime;
-          window.testState.failedTests++;
-        } finally {
-          window.testState.addTestToSuite(suite, test);
-        }
-      })();
-
-      window.testState.addTest(testPromise);
-      return testPromise;
-    };
-
-    // Create codi object
-    window.codi = {
-      describe: window.describe,
-      it: window.it,
-      state: window.testState,
-      assertEqual: window.assertEqual,
-      assertNotEqual: window.assertNotEqual,
-      assertTrue: window.assertTrue,
-      assertFalse: window.assertFalse,
-      assertThrows: window.assertThrows,
-      assertNoDuplicates: window.assertNoDuplicates,
-      version: 'v1.0.38'
-    };
-
-    // Also make functions available directly
-    window.describe = window.describe;
-    window.it = window.it;
+${bundleCode}
   </script>
 
   <script>
@@ -497,23 +297,22 @@ function createTestHTML(testDirectory, testFiles, codiConfig) {
     // Test execution
     (async function() {
       try {
-        console.log('🐶 Starting browser tests...');
+        console.log('Starting browser tests...');
 
-        // Execute test code
         ${testCode}
 
-        // Wait for all tests to complete
-        await window.testState.waitForAll();
+        // Wait for all pending tests to complete
+        await codi.state.testTracker.waitForAll();
 
-        // Set results
+        // Collect results for the Node.js runner
         window.testResults = {
-          passedTests: window.testState.passedTests,
-          failedTests: window.testState.failedTests,
-          suiteStack: window.testState.suiteStack,
-          executionTime: window.testState.getExecutionTime()
+          passedTests: codi.state.passedTests,
+          failedTests: codi.state.failedTests,
+          suiteStack: codi.state.suiteStack,
+          executionTime: codi.state.getExecutionTime()
         };
 
-        console.log(\`Tests completed: \${window.testState.passedTests} passed, \${window.testState.failedTests} failed\`);
+        console.log('Tests completed: ' + codi.state.passedTests + ' passed, ' + codi.state.failedTests + ' failed');
 
       } catch (error) {
         console.error('Test execution error:', error);
@@ -528,8 +327,7 @@ function createTestHTML(testDirectory, testFiles, codiConfig) {
     })();
   </script>
 </body>
-</html>
-  `;
+</html>`;
 }
 
 /**
@@ -562,64 +360,63 @@ export async function runBrowserTestFile(testFile) {
  * @returns {Promise<object>} Test results
  */
 export async function runBrowserTestFunction(testFn) {
+  const bundleCode = loadBrowserBundle();
+  if (!bundleCode) {
+    return {
+      passedTests: 0,
+      failedTests: 1,
+      suiteStack: {},
+      error: 'Browser bundle not found. Run "npm run build" first.',
+    };
+  }
+
   let browser = null;
   let page = null;
 
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-
+    browser = await puppeteer.launch(getLaunchOptions());
     page = await browser.newPage();
+    attachPageListeners(page, { quiet: false });
 
-    // Set up console logging
-    page.on('console', (msg) => console.log('Browser:', msg.text()));
-    page.on('pageerror', (error) =>
-      console.error('Page error:', error.message),
-    );
+    const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Codi Test Function</title></head>
+<body>
+  <script>
+${bundleCode}
+  </script>
+  <script>
+    (async function() {
+      try {
+        await (${testFn.toString()})();
+        await codi.state.testTracker.waitForAll();
 
-    // Create minimal HTML for function execution
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head><meta charset="utf-8"><title>Codi Test Function</title></head>
-      <body>
-        <script>
-          // Initialize test environment
-          ${createTestHTML('', [], {}).match(/<script>(.*?)<\/script>/s)[1]}
+        window.testResults = {
+          passedTests: codi.state.passedTests,
+          failedTests: codi.state.failedTests,
+          suiteStack: codi.state.suiteStack
+        };
+      } catch (error) {
+        console.error('Test function execution failed:', error);
+        window.testResults = {
+          passedTests: 0,
+          failedTests: 1,
+          suiteStack: {},
+          error: error.message
+        };
+      }
+    })();
+  </script>
+</body>
+</html>`;
 
-          // Execute test function
-          (async function() {
-            try {
-              await (${testFn.toString()})();
-              await window.testState.waitForAll();
+    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+    await page.goto(dataUrl, { waitUntil: 'networkidle0' });
 
-              window.testResults = {
-                passedTests: window.testState.passedTests,
-                failedTests: window.testState.failedTests,
-                suiteStack: window.testState.suiteStack
-              };
-            } catch (error) {
-              console.error('Test function execution failed:', error);
-              window.testResults = {
-                passedTests: 0,
-                failedTests: 1,
-                suiteStack: {},
-                error: error.message
-              };
-            }
-          })();
-        </script>
-      </body>
-      </html>
-    `;
-
-    await page.setContent(html);
-
-    // Wait for results
     const results = await page
-      .waitForFunction(() => window.testResults, { timeout: 30000 })
+      .waitForFunction(() => window.testResults !== undefined, {
+        timeout: 30000,
+      })
       .then(() => page.evaluate(() => window.testResults));
 
     return results;

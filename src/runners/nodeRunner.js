@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
+import { ready } from '../_codi.js';
 import { state } from '../state/TestState.js';
 import { excludePattern } from '../util/regex.js';
 
@@ -42,6 +43,10 @@ export async function runTests(
   codiConfig = {},
   options = {},
 ) {
+  // Ensure Node.js-specific modules (mock, runTestFunction, etc.) are loaded
+  // before we start importing test files that may use them via the codi object
+  await ready;
+
   state.resetCounters();
   state.startTimer();
   state.setOptions(options);
@@ -83,22 +88,12 @@ export async function runTests(
 
   state.printSummary();
 
-  if (returnResults) {
-    return {
-      passedTests: state.passedTests,
-      failedTests: state.failedTests,
-      suiteStack: state.suiteStack,
-      executionTime: state.getExecutionTime(),
-    };
-  }
-
-  if (state.failedTests > 0) {
-    console.log(chalk.red(`\n${state.failedTests} tests failed.`));
-    process.exit(1);
-  } else {
-    console.log(chalk.green(`\n${state.passedTests} tests passed.`));
-    process.exit(0);
-  }
+  return {
+    passedTests: state.passedTests,
+    failedTests: state.failedTests,
+    suiteStack: state.suiteStack,
+    executionTime: state.getExecutionTime(),
+  };
 }
 
 /**

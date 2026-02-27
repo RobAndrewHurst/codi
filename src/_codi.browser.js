@@ -8,8 +8,7 @@ import {
   runWebTests,
 } from './runners/webRunner.js';
 import { state } from './state/TestState.js';
-
-const version = 'v1.0.39';
+import { version } from './version.js';
 
 // Create the browser-specific codi object (no Node.js dependencies)
 const codi = {
@@ -25,6 +24,14 @@ const codi = {
   assertFalse: assertions.assertFalse,
   assertThrows: assertions.assertThrows,
   assertNoDuplicates: assertions.assertNoDuplicates,
+  assertContains: assertions.assertContains,
+  assertNotContains: assertions.assertNotContains,
+  assertMatch: assertions.assertMatch,
+  assertInstanceOf: assertions.assertInstanceOf,
+  assertCloseTo: assertions.assertCloseTo,
+  assertDeepContains: assertions.assertDeepContains,
+  assertType: assertions.assertType,
+  assertLength: assertions.assertLength,
   version,
   codepenLogging,
 };
@@ -51,6 +58,14 @@ export const {
   assertFalse,
   assertThrows,
   assertNoDuplicates,
+  assertContains,
+  assertNotContains,
+  assertMatch,
+  assertInstanceOf,
+  assertCloseTo,
+  assertDeepContains,
+  assertType,
+  assertLength,
 } = assertions;
 
 // Export the entire codi object as default

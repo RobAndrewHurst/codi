@@ -133,12 +133,20 @@ try {
     window.assertFalse = codi.assertFalse;
     window.assertThrows = codi.assertThrows;
     window.assertNoDuplicates = codi.assertNoDuplicates;
+    window.assertContains = codi.assertContains;
+    window.assertNotContains = codi.assertNotContains;
+    window.assertMatch = codi.assertMatch;
+    window.assertInstanceOf = codi.assertInstanceOf;
+    window.assertCloseTo = codi.assertCloseTo;
+    window.assertDeepContains = codi.assertDeepContains;
+    window.assertType = codi.assertType;
+    window.assertLength = codi.assertLength;
   }`;
 
-  // Insert before the final return statement
+  // Insert before the final return statement in the IIFE
   bundleContent = bundleContent.replace(
-    /(\s+return\s+\w+;\s*}\)\(\);?\s*)$/,
-    `${globalExports}$1`,
+    /(  return __toCommonJS)/,
+    `${globalExports}\n$1`,
   );
 
   fs.writeFileSync(outputPath, bundleContent, 'utf8');
